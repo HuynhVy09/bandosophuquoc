@@ -1,1301 +1,279 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="vi">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bản Đồ Số Phú Quốc - Khám Phá Di Sản Văn Hóa</title>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-        
-        :root {
-            --primary-color: #1e5799;
-            --secondary-color: #ff6b6b;
-            --accent-color: #ffd700;
-            --text-color: #333;
-            --light-bg: #f5f7fa;
-        }
-        
-        body {
-            background-color: var(--light-bg);
-            color: var(--text-color);
-            line-height: 1.6;
-        }
-        
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 0 20px;
-        }
-        
-        /* Header Styles */
-        header {
-            background: linear-gradient(135deg, var(--primary-color) 0%, #207cca 100%);
-            color: white;
-            padding: 1rem 0;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            position: sticky;
-            top: 0;
-            z-index: 1000;
-        }
-        
-        nav {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        
-        .logo {
-            font-size: 1.8rem;
-            font-weight: bold;
-            display: flex;
-            align-items: center;
-        }
-        
-        .logo-icon {
-            margin-right: 10px;
-            font-size: 2rem;
-        }
-        
-        .nav-links {
-            display: flex;
-            list-style: none;
-        }
-        
-        .nav-links li {
-            margin-left: 2rem;
-        }
-        
-        .nav-links a {
-            color: white;
-            text-decoration: none;
-            transition: color 0.3s;
-            font-weight: 500;
-        }
-        
-        .nav-links a:hover {
-            color: var(--accent-color);
-        }
-        
-        .auth-buttons {
-            display: flex;
-            gap: 10px;
-        }
-        
-        .auth-btn {
-            padding: 8px 16px;
-            border-radius: 4px;
-            text-decoration: none;
-            font-weight: 500;
-            transition: all 0.3s;
-        }
-        
-        .login-btn {
-            background: transparent;
-            border: 1px solid white;
-            color: white;
-        }
-        
-        .login-btn:hover {
-            background: rgba(255,255,255,0.1);
-        }
-        
-        .register-btn {
-            background: var(--secondary-color);
-            color: white;
-            border: 1px solid var(--secondary-color);
-        }
-        
-        .register-btn:hover {
-            background: #ff5252;
-        }
-        
-        /* Hero Section */
-        .hero {
-            background: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), 
-                        url('https://images.unsplash.com/photo-1552465011-b4e21bf6e79a?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80') no-repeat center center/cover;
-            height: 70vh;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            text-align: center;
-            color: white;
-            padding: 0 20px;
-        }
-        
-        .hero-content {
-            max-width: 800px;
-        }
-        
-        .hero h1 {
-            font-size: 3rem;
-            margin-bottom: 1rem;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
-        }
-        
-        .hero p {
-            font-size: 1.2rem;
-            margin-bottom: 2rem;
-            text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
-        }
-        
-        .btn {
-            display: inline-block;
-            background: var(--secondary-color);
-            color: white;
-            padding: 12px 30px;
-            border: none;
-            border-radius: 5px;
-            font-size: 1.1rem;
-            cursor: pointer;
-            text-decoration: none;
-            transition: background 0.3s, transform 0.3s;
-            font-weight: 600;
-        }
-        
-        .btn:hover {
-            background: #ff5252;
-            transform: translateY(-3px);
-            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-        }
-        
-        /* Features Section */
-        .features {
-            padding: 5rem 0;
-            background-color: white;
-        }
-        
-        .section-title {
-            text-align: center;
-            margin-bottom: 3rem;
-        }
-        
-        .section-title h2 {
-            font-size: 2.5rem;
-            color: var(--primary-color);
-            margin-bottom: 1rem;
-        }
-        
-        .section-title p {
-            font-size: 1.1rem;
-            color: #666;
-            max-width: 700px;
-            margin: 0 auto;
-        }
-        
-        .features-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 2rem;
-        }
-        
-        .feature-card {
-            background: #f8f9fa;
-            border-radius: 10px;
-            padding: 2rem;
-            text-align: center;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
-            transition: transform 0.3s;
-            border-top: 4px solid var(--primary-color);
-        }
-        
-        .feature-card:hover {
-            transform: translateY(-10px);
-        }
-        
-        .feature-icon {
-            font-size: 3rem;
-            color: var(--primary-color);
-            margin-bottom: 1.5rem;
-        }
-        
-        .feature-card h3 {
-            font-size: 1.5rem;
-            margin-bottom: 1rem;
-            color: #333;
-        }
-        
-        .feature-card p {
-            color: #666;
-        }
-        
-        /* About Section */
-        .about {
-            padding: 5rem 0;
-            background-color: var(--light-bg);
-        }
-        
-        .about-content {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 3rem;
-            align-items: center;
-        }
-        
-        .about-text h2 {
-            font-size: 2.5rem;
-            color: var(--primary-color);
-            margin-bottom: 1.5rem;
-        }
-        
-        .about-text p {
-            margin-bottom: 1.5rem;
-            color: #555;
-        }
-        
-        .about-image img {
-            width: 100%;
-            border-radius: 10px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-        }
-        
-        /* Map Section */
-        .map-section {
-            padding: 5rem 0;
-            background-color: white;
-            display: none;
-        }
-        
-        .map-container {
-            height: 600px;
-            border-radius: 10px;
-            overflow: hidden;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-            margin-bottom: 2rem;
-        }
-        
-        #map {
-            height: 100%;
-            width: 100%;
-        }
-        
-        .location-info {
-            background: white;
-            border-radius: 10px;
-            padding: 2rem;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
-            margin-top: 2rem;
-            display: none;
-        }
-        
-        .location-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            margin-bottom: 1.5rem;
-        }
-        
-        .location-title {
-            font-size: 1.8rem;
-            color: var(--primary-color);
-        }
-        
-        .location-content {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 2rem;
-        }
-        
-        .location-image {
-            width: 100%;
-            border-radius: 10px;
-        }
-        
-        .location-description {
-            color: #555;
-            line-height: 1.8;
-        }
-        
-        .game-section {
-            margin-top: 2rem;
-            padding-top: 2rem;
-            border-top: 1px solid #eee;
-        }
-        
-        .game-title {
-            font-size: 1.5rem;
-            color: var(--primary-color);
-            margin-bottom: 1rem;
-        }
-        
-        /* Game Styles */
-        .game-container {
-            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
-            border-radius: 15px;
-            padding: 2rem;
-            color: white;
-            text-align: center;
-            margin-top: 1.5rem;
-        }
-        
-        .quiz-game {
-            display: none;
-        }
-        
-        .quiz-question {
-            font-size: 1.3rem;
-            margin-bottom: 1.5rem;
-        }
-        
-        .quiz-options {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 1rem;
-            margin-bottom: 1.5rem;
-        }
-        
-        .quiz-option {
-            background: rgba(255,255,255,0.2);
-            border: 2px solid rgba(255,255,255,0.3);
-            border-radius: 8px;
-            padding: 1rem;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-        
-        .quiz-option:hover {
-            background: rgba(255,255,255,0.3);
-            transform: translateY(-3px);
-        }
-        
-        .quiz-result {
-            font-size: 1.2rem;
-            margin-top: 1rem;
-            display: none;
-        }
-        
-        .memory-game {
-            display: none;
-        }
-        
-        .memory-grid {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 10px;
-            margin: 1.5rem auto;
-            max-width: 400px;
-        }
-        
-        .memory-card {
-            height: 80px;
-            background: rgba(255,255,255,0.2);
-            border-radius: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.5rem;
-            cursor: pointer;
-            transition: all 0.3s;
-            transform-style: preserve-3d;
-        }
-        
-        .memory-card.flipped {
-            background: white;
-            color: #6a11cb;
-            transform: rotateY(180deg);
-        }
-        
-        .game-buttons {
-            display: flex;
-            justify-content: center;
-            gap: 1rem;
-            margin-top: 1.5rem;
-        }
-        
-        /* Badge Styles */
-        .badge-section {
-            margin-top: 2rem;
-            padding: 1.5rem;
-            background: #f8f9fa;
-            border-radius: 10px;
-            text-align: center;
-        }
-        
-        .badge-earned {
-            display: none;
-            margin-top: 1rem;
-        }
-        
-        .badge {
-            display: inline-flex;
-            flex-direction: column;
-            align-items: center;
-            margin: 0 1rem;
-        }
-        
-        .badge-icon {
-            font-size: 3rem;
-            color: var(--accent-color);
-            margin-bottom: 0.5rem;
-        }
-        
-        .badge-name {
-            font-weight: 600;
-            color: var(--primary-color);
-        }
-        
-        /* Profile Section */
-        .profile-section {
-            padding: 5rem 0;
-            background-color: var(--light-bg);
-            display: none;
-        }
-        
-        .profile-container {
-            background: white;
-            border-radius: 10px;
-            padding: 2rem;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
-            max-width: 800px;
-            margin: 0 auto;
-        }
-        
-        .profile-header {
-            display: flex;
-            align-items: center;
-            margin-bottom: 2rem;
-            padding-bottom: 1.5rem;
-            border-bottom: 1px solid #eee;
-        }
-        
-        .profile-avatar {
-            width: 100px;
-            height: 100px;
-            border-radius: 50%;
-            background: var(--primary-color);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-size: 2.5rem;
-            margin-right: 1.5rem;
-        }
-        
-        .profile-info h2 {
-            font-size: 1.8rem;
-            color: var(--primary-color);
-            margin-bottom: 0.5rem;
-        }
-        
-        .profile-badges {
-            margin-top: 2rem;
-        }
-        
-        .badges-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-            gap: 1.5rem;
-            margin-top: 1rem;
-        }
-        
-        .badge-item {
-            text-align: center;
-        }
-        
-        .badge-item.locked .badge-icon {
-            color: #ccc;
-        }
-        
-        /* Auth Modal */
-        .auth-modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.7);
-            z-index: 2000;
-            align-items: center;
-            justify-content: center;
-        }
-        
-        .auth-content {
-            background: white;
-            border-radius: 10px;
-            width: 100%;
-            max-width: 400px;
-            padding: 2rem;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-        }
-        
-        .auth-tabs {
-            display: flex;
-            margin-bottom: 1.5rem;
-            border-bottom: 1px solid #eee;
-        }
-        
-        .auth-tab {
-            padding: 0.5rem 1rem;
-            cursor: pointer;
-            font-weight: 500;
-        }
-        
-        .auth-tab.active {
-            color: var(--primary-color);
-            border-bottom: 2px solid var(--primary-color);
-        }
-        
-        .auth-form {
-            display: none;
-        }
-        
-        .auth-form.active {
-            display: block;
-        }
-        
-        .form-group {
-            margin-bottom: 1.5rem;
-        }
-        
-        .form-group label {
-            display: block;
-            margin-bottom: 0.5rem;
-            font-weight: 500;
-        }
-        
-        .form-group input {
-            width: 100%;
-            padding: 0.75rem;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            font-size: 1rem;
-        }
-        
-        .close-modal {
-            float: right;
-            background: none;
-            border: none;
-            font-size: 1.5rem;
-            cursor: pointer;
-            color: #999;
-        }
-        
-        /* Footer */
-        footer {
-            background: var(--primary-color);
-            color: white;
-            padding: 3rem 0;
-            text-align: center;
-        }
-        
-        .footer-content {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 2rem;
-            margin-bottom: 2rem;
-        }
-        
-        .footer-section h3 {
-            margin-bottom: 1.5rem;
-            font-size: 1.3rem;
-        }
-        
-        .footer-section p, .footer-section a {
-            color: #ccc;
-            margin-bottom: 0.5rem;
-            display: block;
-            text-decoration: none;
-        }
-        
-        .footer-section a:hover {
-            color: white;
-        }
-        
-        .copyright {
-            padding-top: 2rem;
-            border-top: 1px solid rgba(255,255,255,0.1);
-            color: #ccc;
-        }
-        
-        /* Responsive */
-        @media (max-width: 768px) {
-            .nav-links {
-                display: none;
-            }
-            
-            .hero h1 {
-                font-size: 2rem;
-            }
-            
-            .about-content {
-                grid-template-columns: 1fr;
-            }
-            
-            .location-content {
-                grid-template-columns: 1fr;
-            }
-            
-            .quiz-options {
-                grid-template-columns: 1fr;
-            }
-            
-            .memory-grid {
-                grid-template-columns: repeat(3, 1fr);
-            }
-        }
-    </style>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Bản đồ số Phú Quốc — Mini-game hoàn chỉnh</title>
+
+<!-- Bootstrap 5 -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+<!-- Leaflet CSS -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
+
+<style>
+  :root{
+    --accent:#D32F2F; /* đỏ */
+    --accent2:#FFD54F; /* vàng */
+    --bg:#0b3d91; /* biển */
+  }
+  body{font-family:Inter, system-ui, sans-serif; background:linear-gradient(180deg,#fafafa,#fff); color:#222;}
+  .hero{background: linear-gradient(90deg, rgba(11,61,145,0.12), rgba(211,47,47,0.02));padding:28px;border-radius:12px;margin-bottom:18px;}
+  #map{height:66vh;border-radius:12px;box-shadow:0 6px 18px rgba(3,10,30,0.08);}
+  .badge-grid img{width:64px;height:64px;object-fit:cover;border-radius:8px;}
+  .site-brand{font-weight:700;color:var(--accent);}
+  .diadic--title{font-weight:700;font-size:1.05rem;}
+  .card-game{border-radius:10px;box-shadow:0 6px 18px rgba(0,0,0,0.06);}
+  footer{font-size:0.9rem;padding:18px 0;color:#666;}
+  .custom-pin{cursor:pointer;}
+</style>
 </head>
 <body>
-    <!-- Header -->
-    <header>
-        <div class="container">
-            <nav>
-                <div class="logo">
-                    <i class="fas fa-map-marked-alt logo-icon"></i>
-                    <span>Bản Đồ Số Phú Quốc</span>
-                </div>
-                <ul class="nav-links">
-                    <li><a href="#" class="nav-link" data-page="home">Trang Chủ</a></li>
-                    <li><a href="#" class="nav-link" data-page="map">Bản Đồ</a></li>
-                    <li><a href="#" class="nav-link" data-page="profile">Huy Hiệu</a></li>
-                </ul>
-                <div class="auth-buttons">
-                    <a href="#" class="auth-btn login-btn" id="login-btn">Đăng Nhập</a>
-                    <a href="#" class="auth-btn register-btn" id="register-btn">Đăng Ký</a>
-                </div>
-            </nav>
-        </div>
-    </header>
-
-    <!-- Home Section -->
-    <section id="home" class="hero">
-        <div class="hero-content">
-            <h1>Khám Phá Di Sản Văn Hóa Phú Quốc</h1>
-            <p>Trải nghiệm bản đồ số tương tác với các điểm di tích lịch sử, văn hóa đặc sắc của đảo ngọc Phú Quốc</p>
-            <a href="#" class="btn" id="explore-btn">Khám Phá Ngay</a>
-        </div>
-    </section>
-
-    <section class="features">
-        <div class="container">
-            <div class="section-title">
-                <h2>Tính Năng Nổi Bật</h2>
-                <p>Trang web cung cấp các tính năng hấp dẫn giúp bạn khám phá Phú Quốc một cách sinh động và thú vị</p>
-            </div>
-            <div class="features-grid">
-                <div class="feature-card">
-                    <div class="feature-icon"><i class="fas fa-map-marked-alt"></i></div>
-                    <h3>Bản Đồ Tương Tác</h3>
-                    <p>Bản đồ số với các điểm đánh dấu vị trí các di tích lịch sử, văn hóa tại Phú Quốc</p>
-                </div>
-                <div class="feature-card">
-                    <div class="feature-icon"><i class="fas fa-gamepad"></i></div>
-                    <h3>Mini Game</h3>
-                    <p>Tham gia các trò chơi nhỏ để hiểu rõ hơn về từng địa điểm và nhận huy hiệu đặc biệt</p>
-                </div>
-                <div class="feature-card">
-                    <div class="feature-icon"><i class="fas fa-trophy"></i></div>
-                    <h3>Hệ Thống Huy Hiệu</h3>
-                    <p>Thu thập huy hiệu khi hoàn thành các thử thách và khám phá các di tích</p>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <section class="about">
-        <div class="container">
-            <div class="about-content">
-                <div class="about-text">
-                    <h2>Về Dự Án Khoa Học Kỹ Thuật</h2>
-                    <p>Dự án "Bản Đồ Số Phú Quốc" là một sáng kiến giáo dục nhằm bảo tồn và quảng bá các giá trị di sản văn hóa, lịch sử của huyện đảo Phú Quốc thông qua công nghệ số.</p>
-                    <p>Ứng dụng kết hợp giữa bản đồ tương tác, thông tin đa phương tiện và các trò chơi giáo dục để tạo ra trải nghiệm học tập và khám phá thú vị cho người dùng.</p>
-                    <a href="#" class="btn nav-link" data-page="map">Tìm Hiểu Thêm</a>
-                </div>
-                <div class="about-image">
-                    <img src="https://images.unsplash.com/photo-1591871937571-ee8c90e28b12?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80" alt="Phú Quốc">
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Map Section -->
-    <section id="map-section" class="map-section">
-        <div class="container">
-            <div class="section-title">
-                <h2>Bản Đồ Di Sản Phú Quốc</h2>
-                <p>Khám phá các di tích lịch sử và văn hóa trên đảo Phú Quốc</p>
-            </div>
-            <div class="map-container">
-                <div id="map"></div>
-            </div>
-            <div class="location-info" id="location-info">
-                <div class="location-header">
-                    <h2 class="location-title" id="location-title">Nhà Tù Phú Quốc</h2>
-                    <button class="close-btn" id="close-info"><i class="fas fa-times"></i></button>
-                </div>
-                <div class="location-content">
-                    <div>
-                        <img src="https://images.unsplash.com/photo-1588418078110-12eb7cc79b6c?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80" alt="Nhà tù Phú Quốc" class="location-image">
-                    </div>
-                    <div class="location-description">
-                        <p id="location-description">Nhà tù Phú Quốc là một di tích lịch sử quan trọng, từng là nơi giam giữ các tù binh trong thời kỳ chiến tranh. Ngày nay, nơi đây trở thành địa điểm tham quan, giáo dục về lịch sử cho thế hệ trẻ.</p>
-                        <div class="game-section">
-                            <h3 class="game-title">Mini Game Khám Phá</h3>
-                            <div class="game-buttons">
-                                <button class="btn" id="play-quiz">Chơi Đố Vui</button>
-                                <button class="btn" id="play-memory">Ghép Hình</button>
-                            </div>
-                            
-                            <!-- Quiz Game -->
-                            <div class="game-container quiz-game" id="quiz-game">
-                                <h3>Đố Vui Về Di Tích</h3>
-                                <div class="quiz-question" id="quiz-question">Nhà tù Phú Quốc được xây dựng vào năm nào?</div>
-                                <div class="quiz-options">
-                                    <div class="quiz-option" data-correct="false">1945</div>
-                                    <div class="quiz-option" data-correct="true">1967</div>
-                                    <div class="quiz-option" data-correct="false">1975</div>
-                                    <div class="quiz-option" data-correct="false">1954</div>
-                                </div>
-                                <button class="btn" id="submit-quiz">Kiểm Tra</button>
-                                <div class="quiz-result" id="quiz-result"></div>
-                            </div>
-                            
-                            <!-- Memory Game -->
-                            <div class="game-container memory-game" id="memory-game">
-                                <h3>Ghép Hình Di Tích</h3>
-                                <div class="memory-grid" id="memory-grid">
-                                    <!-- Cards will be generated by JavaScript -->
-                                </div>
-                                <button class="btn" id="restart-memory">Chơi Lại</button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="badge-section">
-                    <h3>Huy Hiệu Đạt Được</h3>
-                    <div class="badge-earned" id="badge-earned">
-                        <div class="badge">
-                            <div class="badge-icon"><i class="fas fa-medal"></i></div>
-                            <div class="badge-name" id="badge-name">Nhà Sử Học</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Profile Section -->
-    <section id="profile-section" class="profile-section">
-        <div class="container">
-            <div class="section-title">
-                <h2>Trang Cá Nhân</h2>
-                <p>Xem các huy hiệu bạn đã đạt được</p>
-            </div>
-            <div class="profile-container">
-                <div class="profile-header">
-                    <div class="profile-avatar">
-                        <i class="fas fa-user"></i>
-                    </div>
-                    <div class="profile-info">
-                        <h2 id="profile-username">Người Dùng</h2>
-                        <p id="profile-email">user@example.com</p>
-                    </div>
-                </div>
-                <div class="profile-badges">
-                    <h3>Huy Hiệu Của Tôi</h3>
-                    <div class="badges-grid" id="profile-badges">
-                        <!-- Badges will be populated by JavaScript -->
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Auth Modal -->
-    <div class="auth-modal" id="auth-modal">
-        <div class="auth-content">
-            <button class="close-modal" id="close-auth">&times;</button>
-            <div class="auth-tabs">
-                <div class="auth-tab active" data-tab="login">Đăng Nhập</div>
-                <div class="auth-tab" data-tab="register">Đăng Ký</div>
-            </div>
-            
-            <form class="auth-form active" id="login-form">
-                <div class="form-group">
-                    <label for="login-email">Email</label>
-                    <input type="email" id="login-email" required>
-                </div>
-                <div class="form-group">
-                    <label for="login-password">Mật khẩu</label>
-                    <input type="password" id="login-password" required>
-                </div>
-                <button type="submit" class="btn" style="width: 100%;">Đăng Nhập</button>
-            </form>
-            
-            <form class="auth-form" id="register-form">
-                <div class="form-group">
-                    <label for="register-name">Họ tên</label>
-                    <input type="text" id="register-name" required>
-                </div>
-                <div class="form-group">
-                    <label for="register-email">Email</label>
-                    <input type="email" id="register-email" required>
-                </div>
-                <div class="form-group">
-                    <label for="register-password">Mật khẩu</label>
-                    <input type="password" id="register-password" required>
-                </div>
-                <button type="submit" class="btn" style="width: 100%;">Đăng Ký</button>
-            </form>
-        </div>
+<div class="container py-3">
+  <!-- Header / Hero -->
+  <div class="d-flex align-items-center justify-content-between mb-3">
+    <div>
+      <div class="site-brand">Bản đồ số Phú Quốc</div>
+      <div class="text-muted small">Dự án KHKT: Giáo dục lòng tự hào dân tộc — THPT An Thới</div>
     </div>
+  </div>
 
-    <!-- Footer -->
-    <footer>
-        <div class="container">
-            <div class="footer-content">
-                <div class="footer-section">
-                    <h3>Bản Đồ Số Phú Quốc</h3>
-                    <p>Khám phá di sản văn hóa Phú Quốc qua bản đồ số tương tác và các trò chơi giáo dục thú vị.</p>
-                </div>
-                <div class="footer-section">
-                    <h3>Liên Kết Nhanh</h3>
-                    <a href="#" class="nav-link" data-page="home">Trang Chủ</a>
-                    <a href="#" class="nav-link" data-page="map">Bản Đồ</a>
-                    <a href="#" class="nav-link" data-page="profile">Huy Hiệu</a>
-                </div>
-                <div class="footer-section">
-                    <h3>Liên Hệ</h3>
-                    <p>Email: info@phuquocmap.com</p>
-                    <p>Điện thoại: +84 123 456 789</p>
-                </div>
-            </div>
-            <div class="copyright">
-                <p>&copy; 2023 Bản Đồ Số Phú Quốc. Tất cả các quyền được bảo lưu.</p>
-            </div>
+  <div class="hero mb-3">
+    <div class="row align-items-center">
+      <div class="col-md-8">
+        <h2 class="mb-1">Khám phá di tích — Học lịch sử qua mini-game</h2>
+        <p class="mb-0 text-secondary">Các điểm di tích trọng yếu có mini-game, hoàn thành sẽ nhận huy hiệu.</p>
+      </div>
+      <div class="col-md-4 text-md-end mt-3 mt-md-0">
+        <a href="#map" class="btn btn-lg btn-accent" style="background:linear-gradient(90deg,#d32f2f,#ff7043);color:white">Khám phá bản đồ</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Map -->
+  <div id="map" class="mb-3"></div>
+
+  <!-- Badge strip -->
+  <div class="card p-3 card-game mb-4">
+    <div class="d-flex align-items-center justify-content-between">
+      <div>
+        <div class="diadic--title">Huy hiệu bạn đạt</div>
+        <div class="text-muted small">(lưu tạm trên trình duyệt — demo)</div>
+      </div>
+      <div class="badge-grid d-flex gap-2" id="badge-list">
+        <!-- badges appear here -->
+      </div>
+    </div>
+  </div>
+
+  <footer class="text-center text-muted">
+    © Dự án KHKT — THPT An Thới — Demo GitHub Pages (miễn phí)
+  </footer>
+</div>
+
+<!-- Modal di tích / mini-game -->
+<div class="modal fade" id="diTichModal" tabindex="-1">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-body">
+        <button class="btn-close float-end" data-bs-dismiss="modal"></button>
+        <div id="modalContent"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Bootstrap + Leaflet + Confetti -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+<script>
+/* === Dữ liệu di tích === */
+const diTichData = [
+  {
+    id: "nhatu_phuquoc",
+    title: "Nhà tù Phú Quốc",
+    lat: 10.299599, lng: 103.969697,
+    short: "Nhà tù Phú Quốc - di tích lịch sử lớn về tù binh thời chiến. Giáo dục lòng yêu nước.",
+    img: "https://upload.wikimedia.org/wikipedia/commons/3/3d/Nha_Tu_Phu_Quoc.jpg",
+    hasGame: true,
+    gameType: "quiz",
+    gameId: "quiz_prison"
+  },
+  {
+    id: "dinh_nguyentrungtruc",
+    title: "Đình Nguyễn Trung Trực",
+    lat: 10.219750, lng: 103.983600,
+    short: "Đình thờ người anh hùng Nguyễn Trung Trực, nơi có lễ hội truyền thống.",
+    img: "https://upload.wikimedia.org/wikipedia/commons/5/5f/Nguyen_Trung_Truc_temple.jpg",
+    hasGame: true,
+    gameType: "memory",
+    gameId: "memory_trungtruc"
+  },
+  {
+    id: "nhathung_nuocmam",
+    title: "Nhà thùng nước mắm Phú Quốc",
+    lat: 10.319330, lng: 103.990000,
+    short: "Nhà thùng - đặc sản nước mắm Phú Quốc, nghề truyền thống.",
+    img: "https://upload.wikimedia.org/wikipedia/commons/6/62/Phu_Quoc_fish_sauce_barrels.jpg",
+    hasGame: true,
+    gameType: "quiz",
+    gameId: "quiz_nuocmam"
+  }
+];
+
+/* === Khởi tạo bản đồ Leaflet === */
+const map = L.map('map', {zoomControl:true}).setView([10.28, 103.97], 11);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'© OSM'}).addTo(map);
+
+/* marker icons */
+function makeIcon(color){
+  return L.divIcon({className:'custom-pin', html: `<div style="background:${color};width:18px;height:18px;border-radius:50%;border:3px solid white"></div>`, iconSize:[24,24], iconAnchor:[12,12]});
+}
+
+/* add markers */
+diTichData.forEach(p=>{
+  const m = L.marker([p.lat,p.lng], {icon: makeIcon(p.hasGame ? '#D32F2F' : '#1976D2')}).addTo(map);
+  m.on('click', ()=> openDiTich(p));
+});
+
+/* Modal */
+const modalEl = document.getElementById('diTichModal');
+const bsModal = new bootstrap.Modal(modalEl);
+
+function openDiTich(p){
+  let html = `
+    <div class="row">
+      <div class="col-md-6">
+        <img src="${p.img}" alt="${p.title}" style="width:100%;border-radius:8px;object-fit:cover;">
+      </div>
+      <div class="col-md-6">
+        <h4 class="mb-1">${p.title}</h4>
+        <p class="text-muted small">${p.short}</p>
+        <p><strong>Toạ độ:</strong> ${p.lat.toFixed(6)}, ${p.lng.toFixed(6)}</p>
+        <div class="mt-3">
+          ${p.hasGame ? `<button class="btn btn-danger me-2" onclick="startGame('${p.gameType}','${p.gameId}','${p.id}')">Chơi mini-game</button>` : ''}
+          <button class="btn btn-outline-secondary" data-bs-dismiss="modal">Đóng</button>
         </div>
-    </footer>
+      </div>
+    </div>
+  `;
+  document.getElementById('modalContent').innerHTML = html;
+  bsModal.show();
+}
 
-    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
-    <script>
-        // Dữ liệu các địa điểm di tích
-        const locations = [
-            {
-                id: 1,
-                name: "Nhà Tù Phú Quốc",
-                lat: 10.2279,
-                lng: 103.9638,
-                description: "Nhà tù Phú Quốc là một di tích lịch sử quan trọng, từng là nơi giam giữ các tù binh trong thời kỳ chiến tranh. Ngày nay, nơi đây trở thành địa điểm tham quan, giáo dục về lịch sử cho thế hệ trẻ.",
-                image: "https://images.unsplash.com/photo-1588418078110-12eb7cc79b6c?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80",
-                badge: "Nhà Sử Học"
-            },
-            {
-                id: 2,
-                name: "Dinh Cậu",
-                lat: 10.2187,
-                lng: 103.9612,
-                description: "Dinh Cậu là một ngôi đền nằm trên mũi đá nhô ra biển, thờ thần Nam Hải và các vị thần bảo hộ ngư dân. Đây là điểm đến tâm linh nổi tiếng tại Phú Quốc.",
-                image: "https://images.unsplash.com/photo-1552733407-5d5c46c3bb3b?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80",
-                badge: "Nhà Văn Hóa"
-            },
-            {
-                id: 3,
-                name: "Đình Nguyễn Trung Trực",
-                lat: 10.2165,
-                lng: 103.9678,
-                description: "Đình thờ Nguyễn Trung Trực - vị anh hùng dân tộc nổi tiếng với câu nói 'Bao giờ người Tây nhổ hết cỏ nước Nam thì mới hết người Nam đánh Tây'. Đình là nơi sinh hoạt văn hóa tâm linh của người dân địa phương.",
-                image: "https://images.unsplash.com/photo-1544551763-46a013bb70d5?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80",
-                badge: "Nhà Nghiên Cứu"
-            },
-            {
-                id: 4,
-                name: "Chùa Sùng Hưng",
-                lat: 10.2213,
-                lng: 103.9554,
-                description: "Chùa Sùng Hưng là một trong những ngôi chùa cổ nhất tại Phú Quốc, được xây dựng từ thế kỷ 19. Chùa mang kiến trúc truyền thống Việt Nam và là nơi tu hành của các nhà sư Phật giáo.",
-                image: "https://images.unsplash.com/photo-1547996167-9b9bca0308a4?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80",
-                badge: "Nhà Tâm Linh"
-            }
-        ];
+/* ===== Mini-game logic ===== */
+const quizData = {
+  quiz_prison:[
+    {q:"Nhà tù Phú Quốc nổi tiếng vào thời kỳ nào?", a:["Thời chiến tranh Pháp","Thời chiến tranh Mỹ","Thời nhà Nguyễn"], correct:1},
+    {q:"Mục đích chính của nhà tù?", a:["Tù binh chính trị","Trưng bày văn hóa","Lưu trú khách du lịch"], correct:0},
+    {q:"Nhà tù Phú Quốc nằm trên đảo nào?", a:["Đảo Phú Quốc","Đảo Côn Sơn","Đảo Lý Sơn"], correct:0},
+    {q:"Tên một chiến sĩ nổi tiếng bị giam?", a:["Nguyễn Văn Cừ","Nguyễn Trung Trực","Lê Văn Tám"], correct:1},
+    {q:"Nhà tù hiện nay được dùng làm gì?", a:["Di tích lịch sử","Nhà máy","Trường học"], correct:0}
+  ],
+  quiz_nuocmam:[
+    {q:"Phú Quốc nổi tiếng với sản phẩm gì?", a:["Nước mắm","Rượu vang","Trà xanh"], correct:0},
+    {q:"Nguyên liệu chính làm nước mắm?", a:["Cá cơm","Cá hồi","Cá ngừ"], correct:0},
+    {q:"Nhà thùng nước mắm dùng vật liệu gì?", a:["Gỗ","Thép","Nhựa"], correct:0}
+  ]
+};
 
-        // Dữ liệu người dùng và huy hiệu
-        let user = null;
-        let userBadges = [];
+/* Memory cards for Đình Nguyễn Trung Trực */
+const memoryData = [
+  {front:"Nguyễn Trung Trực", back:"Anh hùng dân tộc, chống Pháp"},
+  {front:"Đình Nguyễn Trung Trực", back:"Nơi thờ Nguyễn Trung Trực"},
+  {front:"Câu nói nổi tiếng", back:"Không có gì quý hơn độc lập tự do"}
+];
 
-        // Khởi tạo bản đồ
-        let map;
-        function initMap() {
-            map = L.map('map').setView([10.225, 103.963], 12);
-            
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-            }).addTo(map);
-            
-            // Thêm marker cho các địa điểm
-            locations.forEach(location => {
-                const marker = L.marker([location.lat, location.lng])
-                    .addTo(map)
-                    .bindPopup(`<b>${location.name}</b><br>Click để xem chi tiết`);
-                
-                marker.on('click', function() {
-                    showLocationInfo(location);
-                });
-            });
-        }
+function startGame(type, gameId, diId){
+  bsModal.hide();
+  if(type==="quiz"){
+    runQuiz(gameId,diId);
+  }else if(type==="memory"){
+    runMemory(diId);
+  }
+}
 
-        // Hiển thị thông tin địa điểm
-        function showLocationInfo(location) {
-            document.getElementById('location-title').textContent = location.name;
-            document.getElementById('location-description').textContent = location.description;
-            document.getElementById('location-info').style.display = 'block';
-            document.getElementById('badge-name').textContent = location.badge;
-            
-            // Ẩn các game khi chuyển địa điểm
-            document.getElementById('quiz-game').style.display = 'none';
-            document.getElementById('memory-game').style.display = 'none';
-            document.getElementById('badge-earned').style.display = 'none';
-        }
+/* ===== Quiz ===== */
+function runQuiz(gameId,diId){
+  const quiz = quizData[gameId];
+  if(!quiz) return;
+  let html=`<h4>Mini-Quiz</h4><form id="quizForm">`;
+  quiz.forEach((q,i)=>{
+    html+=`<div class="mb-2"><strong>${i+1}. ${q.q}</strong><br>`;
+    q.a.forEach((opt,j)=>{
+      html+=`<div class="form-check"><input class="form-check-input" type="radio" name="q${i}" id="q${i}o${j}" value="${j}"><label class="form-check-label" for="q${i}o${j}">${opt}</label></div>`;
+    });
+    html+=`</div>`;
+  });
+  html+=`<button class="btn btn-success" type="submit">Nộp</button></form>`;
+  document.getElementById('modalContent').innerHTML=html;
+  bsModal.show();
 
-        // Khởi tạo game trí nhớ
-        function initMemoryGame() {
-            const memoryGrid = document.getElementById('memory-grid');
-            memoryGrid.innerHTML = '';
-            
-            const symbols = ['🏛️', '📜', '🕍', '⛩️', '🏯', '🕌'];
-            const cards = [...symbols, ...symbols];
-            
-            // Xáo trộn thẻ
-            cards.sort(() => Math.random() - 0.5);
-            
-            cards.forEach(symbol => {
-                const card = document.createElement('div');
-                card.className = 'memory-card';
-                card.textContent = symbol;
-                card.addEventListener('click', flipCard);
-                memoryGrid.appendChild(card);
-            });
-        }
+  document.getElementById('quizForm').onsubmit=function(e){
+    e.preventDefault();
+    let score=0;
+    quiz.forEach((q,i)=>{
+      const sel=document.querySelector(`input[name=q${i}]:checked`);
+      if(sel && parseInt(sel.value)===q.correct) score++;
+    });
+    alert(`Bạn trả lời đúng ${score}/${quiz.length} câu!`);
+    if(score>=quiz.length/2) awardBadge(diId,diId);
+    bsModal.hide();
+    confetti({particleCount:100,spread:70,origin:{y:0.6}});
+  }
+}
 
-        let hasFlippedCard = false;
-        let lockBoard = false;
-        let firstCard, secondCard;
+/* ===== Memory ===== */
+function runMemory(diId){
+  const cards=memoryData.concat(memoryData).sort(()=>Math.random()-0.5);
+  let html=`<h4>Memory Game</h4><div class="d-flex flex-wrap gap-2" id="memCards">`;
+  cards.forEach((c,i)=> html+=`<div class="card p-2 text-center" style="width:100px;height:80px;border:1px solid #ccc;border-radius:6px;cursor:pointer" data-front="${c.front}" data-back="${c.back}">?</div>`);
+  html+=`</div><button class="btn btn-outline-secondary mt-3" onclick="bsModal.hide()">Đóng</button>`;
+  document.getElementById('modalContent').innerHTML=html;
+  bsModal.show();
 
-        function flipCard() {
-            if (lockBoard) return;
-            if (this === firstCard) return;
-            
-            this.classList.add('flipped');
-            
-            if (!hasFlippedCard) {
-                hasFlippedCard = true;
-                firstCard = this;
-                return;
-            }
-            
-            secondCard = this;
-            checkForMatch();
-        }
+  let first=null, second=null;
+  const elements=document.querySelectorAll("#memCards div");
+  elements.forEach(el=>{
+    el.addEventListener('click',()=>{
+      if(el.innerText!=="?") return;
+      el.innerText=el.dataset.front;
+      if(!first){first=el; return;}
+      second=el;
+      if(first.dataset.back===second.dataset.back){
+        setTimeout(()=>{first.style.background="#D32F2F"; second.style.background="#D32F2F"; first.innerText=second.innerText=""; first=null; second=null; awardBadge(diId,diId); confetti({particleCount:100,spread:70,origin:{y:0.6}})},200);
+      }else{
+        setTimeout(()=>{first.innerText=second.innerText="?"; first=null; second=null;},500);
+      }
+    });
+  });
+}
 
-        function checkForMatch() {
-            let isMatch = firstCard.textContent === secondCard.textContent;
-            
-            if (isMatch) {
-                disableCards();
-                checkGameWin();
-            } else {
-                unflipCards();
-            }
-        }
+/* ===== Badge logic ===== */
+function awardBadge(name,diId){
+  const k='pq_badges';
+  const arr=JSON.parse(localStorage.getItem(k)||'[]');
+  if(!arr.find(b=>b.name===name)){
+    arr.push({name,diId,at:new Date().toISOString()});
+    localStorage.setItem(k,JSON.stringify(arr));
+    renderBadges();
+  }
+}
 
-        function disableCards() {
-            firstCard.removeEventListener('click', flipCard);
-            secondCard.removeEventListener('click', flipCard);
-            
-            resetBoard();
-        }
-
-        function unflipCards() {
-            lockBoard = true;
-            
-            setTimeout(() => {
-                firstCard.classList.remove('flipped');
-                secondCard.classList.remove('flipped');
-                
-                resetBoard();
-            }, 1000);
-        }
-
-        function resetBoard() {
-            [hasFlippedCard, lockBoard] = [false, false];
-            [firstCard, secondCard] = [null, null];
-        }
-
-        function checkGameWin() {
-            const allCards = document.querySelectorAll('.memory-card');
-            const flippedCards = document.querySelectorAll('.memory-card.flipped');
-            
-            if (allCards.length === flippedCards.length) {
-                setTimeout(() => {
-                    alert('Chúc mừng! Bạn đã hoàn thành trò chơi!');
-                    awardBadge();
-                }, 500);
-            }
-        }
-
-        // Trao huy hiệu
-        function awardBadge() {
-            const currentLocation = document.getElementById('location-title').textContent;
-            const locationData = locations.find(loc => loc.name === currentLocation);
-            
-            if (locationData && user) {
-                if (!userBadges.includes(locationData.badge)) {
-                    userBadges.push(locationData.badge);
-                    updateProfileBadges();
-                }
-                document.getElementById('badge-earned').style.display = 'block';
-            } else if (!user) {
-                alert('Vui lòng đăng nhập để nhận huy hiệu!');
-                document.getElementById('auth-modal').style.display = 'flex';
-            }
-        }
-
-        // Cập nhật huy hiệu trên trang cá nhân
-        function updateProfileBadges() {
-            const profileBadges = document.getElementById('profile-badges');
-            profileBadges.innerHTML = '';
-            
-            const allBadges = locations.map(loc => loc.badge);
-            
-            allBadges.forEach(badge => {
-                const badgeItem = document.createElement('div');
-                badgeItem.className = `badge-item ${userBadges.includes(badge) ? '' : 'locked'}`;
-                
-                badgeItem.innerHTML = `
-                    <div class="badge-icon">
-                        <i class="fas ${userBadges.includes(badge) ? 'fa-medal' : 'fa-lock'}"></i>
-                    </div>
-                    <div class="badge-name">${badge}</div>
-                `;
-                
-                profileBadges.appendChild(badgeItem);
-            });
-        }
-
-        // Xử lý sự kiện khi DOM đã tải xong
-        document.addEventListener('DOMContentLoaded', function() {
-            // Khởi tạo bản đồ
-            initMap();
-            
-            // Xử lý chuyển trang
-            document.querySelectorAll('.nav-link').forEach(link => {
-                link.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    const page = this.getAttribute('data-page');
-                    
-                    // Ẩn tất cả các section
-                    document.querySelectorAll('section').forEach(section => {
-                        section.style.display = 'none';
-                    });
-                    
-                    // Hiển thị section được chọn
-                    if (page === 'home') {
-                        document.getElementById('home').style.display = 'block';
-                        document.querySelector('.features').style.display = 'block';
-                        document.querySelector('.about').style.display = 'block';
-                    } else if (page === 'map') {
-                        document.getElementById('map-section').style.display = 'block';
-                    } else if (page === 'profile') {
-                        document.getElementById('profile-section').style.display = 'block';
-                        updateProfileBadges();
-                    }
-                });
-            });
-            
-            // Nút khám phá
-            document.getElementById('explore-btn').addEventListener('click', function(e) {
-                e.preventDefault();
-                document.querySelectorAll('section').forEach(section => {
-                    section.style.display = 'none';
-                });
-                document.getElementById('map-section').style.display = 'block';
-            });
-            
-            // Đóng thông tin địa điểm
-            document.getElementById('close-info').addEventListener('click', function() {
-                document.getElementById('location-info').style.display = 'none';
-            });
-            
-            // Xử lý game đố vui
-            document.getElementById('play-quiz').addEventListener('click', function() {
-                document.getElementById('quiz-game').style.display = 'block';
-                document.getElementById('memory-game').style.display = 'none';
-            });
-            
-            document.getElementById('submit-quiz').addEventListener('click', function() {
-                const selectedOption = document.querySelector('.quiz-option:hover');
-                if (selectedOption) {
-                    const isCorrect = selectedOption.getAttribute('data-correct') === 'true';
-                    const result = document.getElementById('quiz-result');
-                    
-                    if (isCorrect) {
-                        result.textContent = 'Chính xác! Bạn đã trả lời đúng.';
-                        result.style.color = 'lightgreen';
-                        awardBadge();
-                    } else {
-                        result.textContent = 'Chưa chính xác. Hãy thử lại!';
-                        result.style.color = 'lightcoral';
-                    }
-                    
-                    result.style.display = 'block';
-                }
-            });
-            
-            // Xử lý game trí nhớ
-            document.getElementById('play-memory').addEventListener('click', function() {
-                document.getElementById('memory-game').style.display = 'block';
-                document.getElementById('quiz-game').style.display = 'none';
-                initMemoryGame();
-            });
-            
-            document.getElementById('restart-memory').addEventListener('click', function() {
-                initMemoryGame();
-            });
-            
-            // Xử lý đăng nhập/đăng ký
-            document.getElementById('login-btn').addEventListener('click', function(e) {
-                e.preventDefault();
-                document.getElementById('auth-modal').style.display = 'flex';
-                document.getElementById('login-form').classList.add('active');
-                document.getElementById('register-form').classList.remove('active');
-                
-                document.querySelectorAll('.auth-tab').forEach(tab => {
-                    if (tab.getAttribute('data-tab') === 'login') {
-                        tab.classList.add('active');
-                    } else {
-                        tab.classList.remove('active');
-                    }
-                });
-            });
-            
-            document.getElementById('register-btn').addEventListener('click', function(e) {
-                e.preventDefault();
-                document.getElementById('auth-modal').style.display = 'flex';
-                document.getElementById('register-form').classList.add('active');
-                document.getElementById('login-form').classList.remove('active');
-                
-                document.querySelectorAll('.auth-tab').forEach(tab => {
-                    if (tab.getAttribute('data-tab') === 'register') {
-                        tab.classList.add('active');
-                    } else {
-                        tab.classList.remove('active');
-                    }
-                });
-            });
-            
-            document.getElementById('close-auth').addEventListener('click', function() {
-                document.getElementById('auth-modal').style.display = 'none';
-            });
-            
-            // Chuyển tab đăng nhập/đăng ký
-            document.querySelectorAll('.auth-tab').forEach(tab => {
-                tab.addEventListener('click', function() {
-                    const tabName = this.getAttribute('data-tab');
-                    
-                    document.querySelectorAll('.auth-tab').forEach(t => {
-                        t.classList.remove('active');
-                    });
-                    this.classList.add('active');
-                    
-                    document.querySelectorAll('.auth-form').forEach(form => {
-                        form.classList.remove('active');
-                    });
-                    document.getElementById(`${tabName}-form`).classList.add('active');
-                });
-            });
-            
-            // Xử lý form đăng nhập
-            document.getElementById('login-form').addEventListener('submit', function(e) {
-                e.preventDefault();
-                const email = document.getElementById('login-email').value;
-                const password = document.getElementById('login-password').value;
-                
-                // Đơn giản hóa: chỉ cần nhập bất kỳ email và mật khẩu nào
-                user = {
-                    name: email.split('@')[0],
-                    email: email
-                };
-                
-                document.getElementById('profile-username').textContent = user.name;
-                document.getElementById('profile-email').textContent = user.email;
-                
-                document.getElementById('auth-modal').style.display = 'none';
-                alert('Đăng nhập thành công!');
-                
-                // Cập nhật giao diện người dùng
-                document.querySelector('.auth-buttons').innerHTML = `
-                    <span style="color: white; margin-right: 1rem;">Xin chào, ${user.name}</span>
-                    <a href="#" class="auth-btn login-btn" id="logout-btn">Đăng Xuất</a>
-                `;
-                
-                document.getElementById('logout-btn').addEventListener('click', function(e) {
-                    e.preventDefault();
-                    user = null;
-                    userBadges = [];
-                    document.querySelector('.auth-buttons').innerHTML = `
-                        <a href="#" class="auth-btn login-btn" id="login-btn">Đăng Nhập</a>
-                        <a href="#" class="auth-btn register-btn" id="register-btn">Đăng Ký</a>
-                    `;
-                    
-                    // Gán lại sự kiện cho các nút đăng nhập/đăng ký mới
-                    document.getElementById('login-btn').addEventListener('click', arguments.callee);
-                    document.getElementById('register-btn').addEventListener('click', arguments.callee);
-                });
-            });
-            
-            // Xử lý form đăng ký
-            document.getElementById('register-form').addEventListener('submit', function(e) {
-                e.preventDefault();
-                const name = document.getElementById('register-name').value;
-                const email = document.getElementById('register-email').value;
-                const password = document.getElementById('register-password').value;
-                
-                user = {
-                    name: name,
-                    email: email
-                };
-                
-                document.getElementById('profile-username').textContent = user.name;
-                document.getElementById('profile-email').textContent = user.email;
-                
-                document.getElementById('auth-modal').style.display = 'none';
-                alert('Đăng ký thành công!');
-                
-                // Cập nhật giao diện người dùng
-                document.querySelector('.auth-buttons').innerHTML = `
-                    <span style="color: white; margin-right: 1rem;">Xin chào, ${user.name}</span>
-                    <a href="#" class="auth-btn login-btn" id="logout-btn">Đăng Xuất</a>
-                `;
-                
-                document.getElementById('logout-btn').addEventListener('click', function(e) {
-                    e.preventDefault();
-                    user = null;
-                    userBadges = [];
-                    document.querySelector('.auth-buttons').innerHTML = `
-                        <a href="#" class="auth-btn login-btn" id="login-btn">Đăng Nhập</a>
-                        <a href="#" class="auth-btn register-btn" id="register-btn">Đăng Ký</a>
-                    `;
-                    
-                    // Gán lại sự kiện cho các nút đăng nhập/đăng ký mới
-                    document.getElementById('login-btn').addEventListener('click', arguments.callee);
-                    document.getElementById('register-btn').addEventListener('click', arguments.callee);
-                });
-            });
-            
-            // Đóng modal khi click bên ngoài
-            window.addEventListener('click', function(e) {
-                if (e.target === document.getElementById('auth-modal')) {
-                    document.getElementById('auth-modal').style.display = 'none';
-                }
-            });
-        });
-    </script>
+function renderBadges(){
+  const k='pq_badges';
+  const arr=JSON.parse(localStorage.getItem(k)||'[]');
+  const wrap=document.getElementById('badge-list');
+  wrap.innerHTML='';
+  arr.forEach(b=>{
+    const el=document.createElement('div');
+    el.innerHTML=`<div class="text-center"><img src="https://via.placeholder.com/64/FF7043/FFFFFF?text=${encodeURIComponent(b.name.charAt(0))}" alt="${b.name}" title="${b.name}" class="rounded"/><div style="font-size:12px">${b.name}</div></div>`;
+    wrap.appendChild(el);
+  });
+}
+renderBadges();
+</script>
 </body>
 </html>
