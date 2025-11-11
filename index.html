@@ -3,142 +3,171 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Bản đồ số Phú Quốc — Dự án KHKT: Tự hào quê hương</title> 
+<title>Bản đồ số Phú Quốc — Dự án KHKT: Tự hào quê hương</title>
 
-<!-- Bootstrap 5 -->
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-<!-- Leaflet -->
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
+
 <style>
   :root{
-    --accent:#7b0a0a; /* đỏ rượu */
-    --gold:#d4af37;   /* vàng kim */
-    --bg:#0b0b0b;
-    --card:#111214;
+    --accent:#C62828; /* đỏ */
+    --gold:#FFD54F;
+    --bg:#FBFBFB;
   }
-  body{font-family: "Noto Sans", sans-serif; background:#f7f5f2; color:#111}
-  .header{display:flex;align-items:center;justify-content:space-between;padding:18px 0}
-  .brand{display:flex;gap:12px;align-items:center}
-  .logo{width:54px;height:54px;border-radius:8px;background:linear-gradient(135deg,var(--accent),#c33);display:flex;align-items:center;justify-content:center;color:white;font-weight:700;font-size:20px;box-shadow:0 6px 18px rgba(0,0,0,0.08)}
-  .title{font-weight:700;color:var(--accent)}
-  .sub{font-size:0.9rem;color:#666}
-  .hero{background:linear-gradient(90deg, rgba(123,10,10,0.06), rgba(212,175,55,0.02));padding:18px;border-radius:12px;margin-bottom:16px}
-  #map{height:64vh;border-radius:12px;box-shadow:0 8px 30px rgba(11,10,12,0.06);border:1px solid rgba(0,0,0,0.04)}
-  .card-info{border-radius:10px;box-shadow:0 6px 18px rgba(0,0,0,0.06)}
+  body{font-family: "Noto Sans", system-ui, sans-serif; background:var(--bg); color:#111;}
+  .container-main{max-width:1100px;margin:auto;}
+  .logo{width:60px;height:60px;border-radius:8px;background:linear-gradient(135deg,var(--accent),#B71C1C);display:flex;align-items:center;justify-content:center;color:white;font-weight:800;font-size:22px}
+  .hero{background:linear-gradient(90deg, rgba(198,40,40,0.06), rgba(255,213,79,0.02));padding:22px;border-radius:12px;margin:18px 0}
+  .btn-accent{background:linear-gradient(90deg,var(--accent),#EF5350);color:white;border:none}
+  #map{height:64vh;border-radius:12px}
   .badge-img{width:56px;height:56px;border-radius:8px;object-fit:cover}
-  .marker-emoji{font-size:20px;line-height:24px}
+  .marker-emoji{font-size:20px}
   .diatic-title{font-weight:700}
-  .game-btn{background:linear-gradient(90deg,var(--accent),#b32);color:white}
-  footer{padding:18px 0;color:#666}
-  /* game styles */
-  .quiz-item{margin-bottom:12px}
-  .memory-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
-  .card-tile{background:#fff;padding:6px;border-radius:8px;display:flex;align-items:center;justify-content:center;cursor:pointer;user-select:none}
-  /* timeline */
-  .timeline-list{list-style:none;padding-left:0}
-  .timeline-list li{padding:8px 12px;border-radius:8px;margin-bottom:8px;background:#fff;cursor:grab}
+  .game-card{border-radius:10px;background:white;padding:12px;box-shadow:0 6px 18px rgba(0,0,0,0.06)}
+  footer{padding:18px 0;color:#666;text-align:center;margin-top:18px}
+  .correct{color:green;font-weight:700}
+  .wrong{color:#c62828;font-weight:700}
+  .explain{font-size:0.95rem;color:#444}
+  /* small responsive tweaks */
+  @media (max-width:767px){ .hero{padding:14px} }
 </style>
 </head>
 <body>
-<div class="container py-3">
-  <div class="header mb-2">
-    <div class="brand">
+<div class="container container-main py-3">
+  <!-- NAV / header -->
+  <div class="d-flex align-items-center justify-content-between mb-2">
+    <div class="d-flex gap-3 align-items-center">
       <div class="logo">PQ</div>
       <div>
-        <div class="title">Bản đồ số Phú Quốc</div>
-        <div class="sub">Dự án KHKT — Giáo dục lòng tự hào dân tộc (THPT An Thới)</div>
+        <div style="font-weight:800;font-size:1.15rem">Bản đồ số Phú Quốc</div>
+        <div style="color:#666;font-size:0.9rem">Dự án KHKT — Giáo dục lòng tự hào dân tộc (THPT An Thới)</div>
       </div>
     </div>
     <div>
-      <button id="btn-register" class="btn btn-outline-dark me-2">Đăng ký</button>
-      <button id="btn-login" class="btn btn-dark">Đăng nhập</button>
-      <button id="btn-logout" class="btn btn-outline-secondary" style="display:none">Đăng xuất</button>
+      <button id="nav-home" class="btn btn-sm btn-outline-secondary me-1">Trang chủ</button>
+      <button id="nav-map" class="btn btn-sm btn-accent">Bản đồ số</button>
+      <button id="btn-profile" class="btn btn-sm btn-outline-primary" style="display:none">Tài khoản</button>
+      <button id="btn-register" class="btn btn-sm btn-outline-dark">Đăng ký</button>
+      <button id="btn-login" class="btn btn-sm btn-dark">Đăng nhập</button>
+      <button id="btn-logout" class="btn btn-sm btn-outline-secondary" style="display:none">Đăng xuất</button>
     </div>
   </div>
 
-  <div class="hero mb-3 d-flex align-items-center justify-content-between">
-    <div>
-      <h3 style="margin:0;color:var(--accent)">Khám phá di tích — Học lịch sử qua tương tác</h3>
-      <div class="sub">Click vào điểm trên bản đồ để xem thông tin, chơi mini-game và nhận huy hiệu.</div>
-    </div>
-    <div class="text-end">
-      <a href="#map" class="btn btn-lg game-btn">Khám phá bản đồ</a>
-    </div>
-  </div>
-
-  <div id="map"></div>
-
-  <div class="card p-3 mt-3 card-info">
-    <div class="d-flex justify-content-between align-items-center">
-      <div>
-        <div style="font-weight:700">Huy hiệu của bạn</div>
-        <div class="sub">Lưu tạm trong tài khoản (demo)</div>
+  <!-- HOME -->
+  <section id="page-home">
+    <div class="hero">
+      <h1 style="margin:0;color:var(--accent)">Bản đồ số Phú Quốc</h1>
+      <p style="margin-top:10px;margin-bottom:8px">Bản đồ số Phú Quốc là một website giáo dục tương tác — nơi học sinh khám phá di tích, học lịch sử qua trò chơi và nhận huy hiệu (badge). Nội dung phù hợp với chủ đề giáo dục lòng tự hào dân tộc và tình yêu quê hương.</p>
+      <p style="margin:0 0 6px 0;color:#444">Trang web giúp học sinh: (1) hiểu giá trị di tích; (2) rèn kỹ năng kể chuyện, dịch thuật và tư duy lịch sử; (3) trải nghiệm hoạt động học tập tương tác, gần gũi Gen Z.</p>
+      <p style="margin:0 0 8px 0;color:#444">Bản đồ số là giải pháp thuộc khuôn khổ dự án khoa học kĩ thuật "<strong>Giáo dục lòng tự hào dân tộc và tình yêu quê hương đất nước cho tuổi trẻ THPT An Thới</strong>".</p>
+      <div class="mt-3">
+        <button id="btn-start" class="btn btn-accent btn-lg">Bắt đầu khám phá</button>
       </div>
-      <div id="badge-area" class="d-flex gap-2"></div>
     </div>
-  </div>
 
-  <footer class="text-center mt-3">© Dự án KHKT — THPT An Thới — Demo GitHub Pages (miễn phí)</footer>
+    <div class="row g-3">
+      <div class="col-md-6">
+        <div class="game-card">
+          <h5>Ý tưởng chính</h5>
+          <ul>
+            <li>Tích hợp bản đồ di tích — mỗi điểm có tin, ảnh, video và mini-game nhỏ.</li>
+            <li>Badge & hệ điểm khuyến khích, dễ đo lường cho báo cáo KHKT.</li>
+            <li>Phù hợp pilot: chạy ở quy mô lớp/lớp học, không cần mua host (GitHub Pages demo).</li>
+          </ul>
+        </div>
+      </div>
+      <div class="col-md-6">
+        <div class="game-card">
+          <h5>Hướng dẫn nhanh</h5>
+          <ol style="padding-left:18px">
+            <li>Nhấn "Bắt đầu khám phá" để sang trang bản đồ.</li>
+            <li>Click marker để xem thông tin; nếu có mini-game, bấm "Chơi".</li>
+            <li>Đăng ký/đăng nhập để lưu huy hiệu (demo lưu local).</li>
+          </ol>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- MAP PAGE -->
+  <section id="page-map" style="display:none">
+    <div id="map" class="mb-3"></div>
+
+    <div class="card p-3 mb-3">
+      <div class="d-flex justify-content-between align-items-center">
+        <div>
+          <div style="font-weight:700">Huy hiệu của bạn</div>
+          <div style="color:#666;font-size:0.9rem">Lưu tạm trên trình duyệt (demo). Khi hoàn thành các điều kiện, huy hiệu sẽ hiện ở đây.</div>
+        </div>
+        <div id="badge-area" class="d-flex gap-2"></div>
+      </div>
+    </div>
+
+    <!-- profile area (simple) -->
+    <div class="card p-3 mb-3">
+      <div id="profile-area">
+        <div style="font-weight:700">Trang cá nhân (demo)</div>
+        <div id="profile-info" style="color:#444;margin-top:6px">Bạn chưa đăng nhập.</div>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    © Dự án KHKT — THPT An Thới — Demo (miễn phí)
+  </footer>
 </div>
 
-<!-- Modal chính cho di tích -->
+<!-- DI TÍCH MODAL -->
 <div class="modal fade" id="diModal" tabindex="-1">
   <div class="modal-dialog modal-xl modal-dialog-centered">
     <div class="modal-content">
-      <div class="modal-header" style="background:linear-gradient(90deg,var(--accent),#b32);color:white">
-        <h5 class="modal-title" id="diModalTitle"></h5>
-        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      <div class="modal-header" style="background:linear-gradient(90deg,var(--accent),#d32);color:white">
+        <h5 class="modal-title" id="diTitle"></h5>
+        <button class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
       </div>
-      <div class="modal-body" id="diModalBody"></div>
+      <div class="modal-body" id="diBody"></div>
       <div class="modal-footer">
         <div class="me-auto">
           <small class="text-muted">Toạ độ: <span id="diCoords"></span></small>
         </div>
-        <button id="playGamesBtn" class="btn game-btn" style="display:none">Chơi mini-game</button>
+        <button id="btn-checkin" class="btn btn-outline-success">Check-in (Tôi đã đến)</button>
+        <button id="btn-play" class="btn btn-accent" style="display:none">Chơi mini-game</button>
         <button class="btn btn-outline-secondary" data-bs-dismiss="modal">Đóng</button>
       </div>
     </div>
   </div>
 </div>
 
-<!-- Modal: game container -->
+<!-- GAME MODAL -->
 <div class="modal fade" id="gameModal" tabindex="-1">
   <div class="modal-dialog modal-lg modal-dialog-centered">
     <div class="modal-content">
-      <div class="modal-header" style="background:#111;color:var(--gold)">
+      <div class="modal-header" style="background:#222;color:var(--gold)">
         <h5 class="modal-title" id="gameTitle"></h5>
-        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        <button class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
       </div>
       <div class="modal-body" id="gameBody"></div>
       <div class="modal-footer">
-        <div class="me-auto"><small id="gameHint" class="text-muted"></small></div>
-        <button id="gameSubmit" class="btn btn-dark">Hoàn thành</button>
+        <div class="me-auto"><small id="gameNote" class="text-muted"></small></div>
+        <button id="gameNext" class="btn btn-dark" style="display:none">Tiếp</button>
+        <button id="gameSubmit" class="btn btn-accent">Hoàn thành</button>
         <button class="btn btn-outline-secondary" data-bs-dismiss="modal">Thoát</button>
       </div>
     </div>
   </div>
 </div>
 
-<!-- Modal đăng ký / đăng nhập -->
+<!-- AUTH modal -->
 <div class="modal fade" id="authModal" tabindex="-1">
   <div class="modal-dialog modal-sm modal-dialog-centered">
     <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="authTitle">Đăng ký</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-      </div>
+      <div class="modal-header"><h5 class="modal-title" id="authTitle">Đăng ký</h5><button class="btn-close" data-bs-dismiss="modal"></button></div>
       <div class="modal-body">
         <div id="authAlert" class="alert alert-danger d-none"></div>
-        <div class="mb-2">
-          <input id="inName" class="form-control" placeholder="Tên hiển thị">
-        </div>
-        <div class="mb-2">
-          <input id="inEmail" class="form-control" placeholder="Gmail">
-        </div>
-        <div class="mb-2">
-          <input id="inPass" type="password" class="form-control" placeholder="Mật khẩu">
-        </div>
-        <div class="form-text">Dữ liệu demo lưu cục bộ (local). Khi deploy thật, có thể chuyển sang Firebase miễn phí.</div>
+        <input id="inName" class="form-control mb-2" placeholder="Tên hiển thị">
+        <input id="inEmail" class="form-control mb-2" placeholder="Gmail">
+        <input id="inPass" type="password" class="form-control mb-2" placeholder="Mật khẩu">
+        <div class="form-text">Demo lưu tại trình duyệt. Để dùng thực, sẽ hướng dẫn tích hợp Firebase.</div>
       </div>
       <div class="modal-footer">
         <button id="authSubmit" class="btn btn-dark">Xác nhận</button>
@@ -154,452 +183,152 @@
 <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 
 <script>
-/* ========== DỮ LIỆU DI TÍCH (có thể hiệu chỉnh toạ độ bằng Google Maps nếu cần) ========== */
-const diTich = [
-  /* Điểm chính 1: Nhà tù Phú Quốc (3 game) */
+/* ---------------------------
+  Dữ liệu điểm (chi tiết theo input của bạn)
+  NOTE: một số toạ độ trong input là chuỗi lớn (không hợp lệ). 
+  Mình đã giữ toạ độ gần đúng hợp lý để map hiển thị; 
+  bạn có thể thay chính xác bằng cách kiểm tra trên Google Maps và cập nhật vào mảng bên dưới.
+----------------------------*/
+const DI_TICH = [
   {
-    id: 'nha-tu',
-    name: 'Nhà tù Phú Quốc',
-    lat: 10.2228, lng: 103.9463, // <--- bạn nên verify chính xác; đây là toạ độ tham khảo
-    desc: 'Nhà tù Phú Quốc — di tích chứng tích chiến tranh, nơi giam giữ nhiều chiến sĩ đấu tranh.',
-    img: 'https://upload.wikimedia.org/wikipedia/commons/3/3d/Nha_Tu_Phu_Quoc.jpg',
-    games: ['quiz_nhatu','match_nhatu','find_nhatu']
+    id:'nha-tu',
+    name:'Nhà tù Phú Quốc',
+    address:'350 Đ. Nguyễn Văn Cừ, An Thới, Phú Quốc, Kiên Giang, Việt Nam',
+    note:'Di tích lịch sử cấp Quốc gia đặc biệt (2014). Nơi giam giữ nhiều tù binh trong kháng chiến; chứng tích tra tấn, nhưng cũng là biểu tượng ý chí kiên cường.',
+    extra:[
+      'Năm xây dựng: 01/06/1967',
+      'Còn gọi: Nhà lao Cây Dừa',
+      'Khoảng 40.000 tù binh từng bị giam; nhiều tù nhân bị tra tấn dã man. Có 45 cuộc vượt ngục ghi nhận.'
+    ],
+    lat:10.2996, lng:103.9697,
+    games:['quiz_nhatu','puzzle_nhatu','observe_nhatu'],
+    img:'https://upload.wikimedia.org/wikipedia/commons/3/3d/Nha_Tu_Phu_Quoc.jpg'
   },
-  /* Điểm chính 2: Đình Nguyễn Trung Trực (3 game) */
   {
-    id: 'dinh-ntt',
-    name: 'Đình Nguyễn Trung Trực',
-    lat: 10.2764, lng: 103.9732,
-    desc: 'Đình thờ Nguyễn Trung Trực — biểu tượng tinh thần bất khuất chống ngoại xâm.',
-    img: 'https://upload.wikimedia.org/wikipedia/commons/5/5f/Nguyen_Trung_Truc_temple.jpg',
-    games: ['memory_trungtruc','quiz_trungtruc','timeline_trungtruc']
+    id:'dinh-ntt',
+    name:'Đình Thần Nguyễn Trung Trực',
+    address:'9RFV+848, Gành Dầu, Phú Quốc, Kiên Giang, Việt Nam',
+    note:'Di tích lịch sử văn hóa. Đình thờ Anh hùng dân tộc Nguyễn Trung Trực (1839-1868).',
+    extra:[
+      'Đình được xây dựng từ năm 1882',
+      'Lễ giỗ tổ chức hàng năm (âm lịch) — hoạt động truyền thống hơn 100 năm',
+      'Nguyễn Trung Trực nổi tiếng với chiến công đốt tàu Pháp trên sông Nhật Tảo.'
+    ],
+    lat:10.2764, lng:103.9732,
+    games:['quiz_trungtruc','puzzle_trungtruc','timeline_trungtruc'],
+    img:'https://upload.wikimedia.org/wikipedia/commons/5/5f/Nguyen_Trung_Truc_temple.jpg'
   },
-  /* Điểm phụ: Nhà thùng nước mắm */
   {
-    id: 'nha-thung',
-    name: 'Nhà thùng nước mắm Phú Quốc',
-    lat: 10.3156, lng: 103.9935,
-    desc: 'Nhà thùng nước mắm truyền thống — tinh hoa nghề biển Phú Quốc.',
-    img: 'https://upload.wikimedia.org/wikipedia/commons/6/62/Phu_Quoc_fish_sauce_barrels.jpg',
-    games: []
+    id:'dinh-cau',
+    name:'Dinh Cậu',
+    address:'Khu phố 2, Tp. Phú Quốc, Kiên Giang 92500, Việt Nam',
+    note:'Di tích thắng cảnh; tín ngưỡng của ngư dân, có lễ hội hàng năm (15–16/10 âm lịch).',
+    extra:['Xây dựng: 1937 (tu sửa 1997)','Biểu tượng tâm linh của người dân địa phương'],
+    lat:10.2817, lng:103.9980,
+    games:[],
+    img:'https://upload.wikimedia.org/wikipedia/commons/2/2d/DinhCauPhuQuoc.jpg'
   },
-  /* Dinh Cậu */
   {
-    id: 'dinh-cau',
-    name: 'Dinh Cậu',
-    lat: 10.2817, lng: 103.9980,
-    desc: 'Dinh Cậu — tín ngưỡng, biểu tượng của ngư dân địa phương.',
-    img: 'https://upload.wikimedia.org/wikipedia/commons/2/2d/DinhCauPhuQuoc.jpg',
-    games: []
+    id:'chua',
+    name:'Chùa Hộ Quốc',
+    address:'426H+GVQ, Dương Tơ, Phú Quốc, Kiên Giang, Việt Nam',
+    note:'Thiền viện Trúc Lâm Hộ Quốc — kiến trúc tâm linh lớn, phong cách cổ truyền Việt.',
+    extra:[],
+    lat:10.3148, lng:103.9702,
+    games:[],
+    img:'https://upload.wikimedia.org/wikipedia/commons/0/0f/Chua.jpg'
   },
-  /* Làng chài Hàm Ninh */
   {
-    id: 'ham-ninh',
-    name: 'Làng chài Hàm Ninh',
-    lat: 10.2865, lng: 103.9957,
-    desc: 'Làng chài truyền thống, nổi tiếng hải sản tươi ngon.',
-    img: 'https://upload.wikimedia.org/wikipedia/commons/9/9b/Ham_Ninh_fishing_village.jpg',
-    games: []
+    id:'ham-ninh',
+    name:'Làng chài Hàm Ninh',
+    address:'52JV+6XX, TL47, Rạch Hàm, Phú Quốc, Kiên Giang, Việt Nam',
+    note:'Làng chài cổ, nổi tiếng hải sản tươi, ghẹ Hàm Ninh.',
+    extra:[],
+    lat:10.2865, lng:103.9957,
+    games:[],
+    img:'https://upload.wikimedia.org/wikipedia/commons/9/9b/Ham_Ninh_fishing_village.jpg'
   },
-  /* Bảo tàng Cội Nguồn */
   {
-    id: 'baotang',
-    name: 'Bảo tàng Cội Nguồn',
-    lat: 10.2773, lng: 103.9730,
-    desc: 'Bảo tàng trưng bày lịch sử – văn hoá địa phương.',
-    img: 'https://upload.wikimedia.org/wikipedia/commons/0/0e/Museum.jpg',
-    games: []
+    id:'nha-thung',
+    name:'Nhà thùng nước mắm Phú Quốc (Phụng Hưng)',
+    address:'471 Đ. Nguyễn Văn Cừ, Khu 2, Phú Quốc, Kiên Giang',
+    note:'Nhà thùng nước mắm truyền thống; nghề truyền thống của đảo.',
+    extra:['Lịch sử: hàng trăm năm, phương thức ủ muối truyền thống'],
+    lat:10.021035, lng:103.958742,
+    games:[],
+    img:'https://upload.wikimedia.org/wikipedia/commons/6/62/Phu_Quoc_fish_sauce_barrels.jpg'
   },
-  /* Chùa Hộ Quốc */
   {
-    id: 'chua',
-    name: 'Chùa Hộ Quốc',
-    lat: 10.3148, lng: 103.9702,
-    desc: 'Chùa Hộ Quốc (Thiền viện Trúc Lâm Hộ Quốc) — kiến trúc tâm linh lớn.',
-    img: 'https://upload.wikimedia.org/wikipedia/commons/0/0f/Chua.jpg',
-    games: []
+    id:'baotang',
+    name:'Bảo tàng Cội Nguồn',
+    address:'Phú Quốc, Kiên Giang',
+    note:'Bảo tàng trưng bày lịch sử-văn hóa địa phương',
+    extra:[],
+    lat:10.2773, lng:103.9730,
+    games:[],
+    img:'https://upload.wikimedia.org/wikipedia/commons/0/0e/Museum.jpg'
   }
 ];
 
-/* ========== Helpers: localStorage user & badges (demo) ========== */
-const STORAGE_USER = 'pq_user_demo';
-const STORAGE_BADGES = 'pq_badges_demo';
+/* -----------------------
+  Local demo storage keys
+------------------------*/
+const STORAGE_USER = 'pq_user_demo_v1';
+const STORAGE_BADGES = 'pq_badges_demo_v1';
+const STORAGE_DONE = 'pq_done_games_v1';
+const STORAGE_VISIT = 'pq_visited_v1';
 
-function saveUser(obj){ localStorage.setItem(STORAGE_USER, JSON.stringify(obj)) }
-function loadUser(){ return JSON.parse(localStorage.getItem(STORAGE_USER)||'null') }
-function saveBadges(arr){ localStorage.setItem(STORAGE_BADGES, JSON.stringify(arr)) }
-function loadBadges(){ return JSON.parse(localStorage.getItem(STORAGE_BADGES)||'[]') }
+/* --------- Helpers ------------- */
+function saveUser(u){ localStorage.setItem(STORAGE_USER, JSON.stringify(u)) }
+function loadUser(){ return JSON.parse(localStorage.getItem(STORAGE_USER) || 'null') }
+function loadBadges(){ return JSON.parse(localStorage.getItem(STORAGE_BADGES) || '[]') }
+function saveBadges(a){ localStorage.setItem(STORAGE_BADGES, JSON.stringify(a)) }
+function loadDone(){ return JSON.parse(localStorage.getItem(STORAGE_DONE) || '{}') }
+function saveDone(o){ localStorage.setItem(STORAGE_DONE, JSON.stringify(o)) }
+function loadVisited(){ return JSON.parse(localStorage.getItem(STORAGE_VISIT) || '[]') }
+function saveVisited(a){ localStorage.setItem(STORAGE_VISIT, JSON.stringify(a)) }
 
-/* ========== Init Map ========== */
-const map = L.map('map').setView([10.28,103.98], 11);
-L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'© OpenStreetMap'}).addTo(map);
+/* ---------- UI & Navigation ---------- */
+const pageHome = document.getElementById('page-home');
+const pageMap = document.getElementById('page-map');
+const navHome = document.getElementById('nav-home');
+const navMap = document.getElementById('nav-map');
+const btnStart = document.getElementById('btn-start');
+const btnRegister = document.getElementById('btn-register');
+const btnLogin = document.getElementById('btn-login');
+const btnLogout = document.getElementById('btn-logout');
+const btnProfileNav = document.getElementById('btn-profile');
 
-/* Create markers with illustrative icons (minh hoạ di tích) */
-function createMarkerIcon(emoji){
-  return L.divIcon({className:'custom-icon', html:`<div style="background:linear-gradient(180deg,#fff,#f1f1f1);padding:6px;border-radius:8px;border:2px solid #fff;box-shadow:0 6px 12px rgba(0,0,0,0.12)"><span class="marker-emoji">${emoji}</span></div>`, iconSize:[36,36], iconAnchor:[18,36]});
-}
+function showHome(){ pageHome.style.display='block'; pageMap.style.display='none'; }
+function showMap(){ pageHome.style.display='none'; pageMap.style.display='block'; setTimeout(()=> map.invalidateSize(),300); }
 
-/* map markers */
-diTich.forEach(d=>{
-  const emoji = d.games.length ? '🏛️' : '📍';
-  const m = L.marker([d.lat,d.lng], {icon: createMarkerIcon(emoji)}).addTo(map);
-  m.on('click', ()=> openDiModal(d));
-});
+navHome.onclick = showHome;
+navMap.onclick = showMap;
+btnStart.onclick = ()=> { showMap(); window.scrollTo(0,0); }
 
-/* modal instances */
-const diModal = new bootstrap.Modal(document.getElementById('diModal'));
-const gameModal = new bootstrap.Modal(document.getElementById('gameModal'));
+/* Auth modal */
 const authModal = new bootstrap.Modal(document.getElementById('authModal'));
-
-/* render badge area */
-function renderBadges(){
-  const wrap = document.getElementById('badge-area');
-  wrap.innerHTML = '';
-  const arr = loadBadges();
-  arr.forEach(b=>{
-    const el = document.createElement('div');
-    el.innerHTML = `<div style="text-align:center"><img src="${b.icon}" class="badge-img"><div style="font-size:12px">${b.name}</div></div>`;
-    wrap.appendChild(el);
-  });
-}
-
-/* open di tích modal */
-function openDiModal(d){
-  document.getElementById('diModalTitle').innerText = d.name;
-  const html = `
-    <div class="row">
-      <div class="col-md-6">
-        <img src="${d.img}" alt="${d.name}" style="width:100%;border-radius:8px;object-fit:cover;max-height:320px">
-      </div>
-      <div class="col-md-6">
-        <h5 class="diatic-title">${d.name}</h5>
-        <p class="text-muted">${d.desc}</p>
-        <p><strong>Địa chỉ (toạ độ):</strong> ${d.lat.toFixed(6)}, ${d.lng.toFixed(6)}</p>
-        ${d.games.length ? `<div><strong>Mini-game:</strong><ul>${d.games.map(g=>`<li>${gameLabel(g)}</li>`).join('')}</ul></div>` : '<div class="text-muted">Không có mini-game ở điểm này</div>'}
-      </div>
-    </div>
-  `;
-  document.getElementById('diModalBody').innerHTML = html;
-  document.getElementById('diCoords').innerText = `${d.lat.toFixed(6)}, ${d.lng.toFixed(6)}`;
-  const btn = document.getElementById('playGamesBtn');
-  if(d.games.length){
-    btn.style.display = 'inline-block';
-    btn.onclick = ()=> { diModal.hide(); openGameSelector(d) };
-  } else {
-    btn.style.display = 'none';
-    btn.onclick = null;
-  }
-  diModal.show();
-}
-
-/* game label helper */
-function gameLabel(id){
-  const map = {
-    quiz_nhatu:'Quiz lịch sử (5 câu)',
-    match_nhatu:'Ghép ảnh - vị trí',
-    find_nhatu:'Tìm chi tiết trong ảnh',
-    memory_trungtruc:'Memory: ghép sự kiện',
-    quiz_trungtruc:'Quiz trung trục (5 câu)',
-    timeline_trungtruc:'Sắp xếp mốc thời gian'
-  };
-  return map[id] || id;
-}
-
-/* open a simple selector for games at that di tích */
-function openGameSelector(d){
-  // build selector UI
-  const html = `<div><p class="mb-2">Chọn mini-game:</p><div class="d-flex gap-2 flex-wrap">` +
-    d.games.map(g=>`<button class="btn btn-outline-dark game-choice" data-game="${g}">${gameLabel(g)}</button>`).join('') +
-    `</div></div>`;
-  // show in game modal
-  document.getElementById('gameTitle').innerText = `Mini-game — ${d.name}`;
-  document.getElementById('gameBody').innerHTML = html;
-  document.getElementById('gameSubmit').style.display='none';
-  document.getElementById('gameHint').innerText = 'Chọn 1 mini-game để bắt đầu';
-  gameModal.show();
-
-  // add listeners
-  document.querySelectorAll('.game-choice').forEach(btn=>{
-    btn.addEventListener('click', ()=> {
-      const g = btn.getAttribute('data-game');
-      startGame(g, d);
-    });
-  });
-}
-
-/* awarding badge util (with icons) */
-function awardBadgeInternal(id,name){
-  const badges = loadBadges();
-  if(badges.find(b=>b.id===id)) return false;
-  const icon = (id==='badge1')? 'https://via.placeholder.com/64/C33/fff?text=A' : (id==='badge2')? 'https://via.placeholder.com/64/7a3/fff?text=B' : 'https://via.placeholder.com/64/aa6/fff?text=C';
-  badges.push({id,name,icon});
-  saveBadges(badges);
-  renderBadges();
-  confetti({particleCount:80,spread:60,origin:{y:0.4}});
-  alert('Bạn nhận huy hiệu: ' + name);
-  return true;
-}
-
-/* check conditions and award main badges:
- - badge1: hoàn thành 3 game tại Nhà tù
- - badge2: hoàn thành 3 game tại Đình NTT
- - badge3: mở tất cả 7 điểm (visit)
-*/
-function checkAllBadges(){
-  const badges = loadBadges();
-  const user = loadUser();
-  // track completed games per site in storage (demo)
-  const done = JSON.parse(localStorage.getItem('pq_done_games')||'{}');
-  // badge1
-  if(done['nha-tu'] && done['nha-tu'].length >= 3) awardBadgeInternal('badge1','Anh hùng bảo vệ biển đảo');
-  if(done['dinh-ntt'] && done['dinh-ntt'].length >= 3) awardBadgeInternal('badge2','Chính khí Nguyễn Trung Trực');
-  // visits:
-  const visited = JSON.parse(localStorage.getItem('pq_visited')||'[]');
-  if(visited.length >= diTich.length) awardBadgeInternal('badge3','Nhà khám phá Phú Quốc');
-}
-
-/* mark visit to di tích */
-function markVisited(id){
-  let arr = JSON.parse(localStorage.getItem('pq_visited')||'[]');
-  if(!arr.includes(id)){ arr.push(id); localStorage.setItem('pq_visited', JSON.stringify(arr)); }
-  checkAllBadges();
-}
-
-/* record game done */
-function recordGame(siteId, gameId){
-  const o = JSON.parse(localStorage.getItem('pq_done_games')||'{}');
-  if(!o[siteId]) o[siteId]=[];
-  if(!o[siteId].includes(gameId)){ o[siteId].push(gameId); localStorage.setItem('pq_done_games', JSON.stringify(o)); }
-  checkAllBadges();
-}
-
-/* ========== GAME IMPLEMENTATIONS (simple, accessible) ========== */
-
-/* START a game by id for a di tích */
-function startGame(gid, di){
-  // wrapper not used (we use startGame called via openGameSelector)
-}
-
-/* functions for each mini-game: render UI in gameBody */
-function startGameInstance(g, d){
-  const body = document.getElementById('gameBody');
-  const title = document.getElementById('gameTitle');
-  document.getElementById('gameSubmit').style.display='inline-block';
-  document.getElementById('gameSubmit').onclick = ()=> submitGame(g,d);
-  if(g==='quiz_nhatu'){
-    title.innerText = 'Quiz Nhà tù Phú Quốc (5 câu)';
-    const qs = [
-      {q:'Nhà tù Phú Quốc là di tích liên quan đến:', a:['Hoạt động văn hóa','Chiến tranh & tù chính trị','Du lịch biển'], correct:1},
-      {q:'Một giá trị cần học từ Nhà tù Phú Quốc là:', a:['Tinh thần kiên cường','Giải trí','Thời trang'], correct:0},
-      {q:'Nhà tù này nằm trên đảo nào?', a:['Phú Quốc','Côn Đảo','Phú Yên'], correct:0},
-      {q:'Di tích giúp học sinh nhận ra:', a:['Ý nghĩa hòa bình','Cách làm mắm','Cách trồng tiêu'], correct:0},
-      {q:'Khi hoàn thành quiz này, bạn sẽ:', a:['Có kiến thức mới','Nhận huy hiệu','Cả hai'], correct:2}
-    ];
-    let html = qs.map((it,idx)=>`<div class="quiz-item"><div><strong>${idx+1}. ${it.q}</strong></div>${it.a.map((opt,i)=>`<div><label><input type="radio" name="q${idx}" value="${i}"> ${opt}</label></div>`).join('')}</div>`).join('');
-    body.innerHTML = html;
-    document.getElementById('gameHint').innerText = 'Chọn đáp án rồi bấm Hoàn thành';
-  } else if(g==='match_nhatu'){
-    title.innerText = 'Ghép ảnh - nhận diện (Nhà tù)';
-    // simple drag-drop: left images, right slots with labels
-    const items = [
-      {img:'https://upload.wikimedia.org/wikipedia/commons/3/3d/Nha_Tu_Phu_Quoc.jpg', label:'Cổng chính'},
-      {img:'https://upload.wikimedia.org/wikipedia/commons/1/1a/Cell.jpg', label:'Buồng giam'},
-      {img:'https://upload.wikimedia.org/wikipedia/commons/4/4a/Prison_yard.jpg', label:'Sân giam'}
-    ];
-    // shuffle right labels
-    const labels = items.map(it=>it.label).sort(()=>Math.random()-0.5);
-    let left = items.map((it,idx)=>`<div class="card-tile" draggable="true" data-id="${idx}"><img src="${it.img}" style="width:100%;height:80px;object-fit:cover;border-radius:6px"></div>`).join('');
-    let right = labels.map((lab,idx)=>`<div class="card-tile drop-slot" data-label="${lab}" style="height:90px">${lab}</div>`).join('');
-    body.innerHTML = `<div class="row"><div class="col-6">${left}</div><div class="col-6">${right}</div></div>`;
-    // add drag-drop listeners
-    setTimeout(()=> {
-      document.querySelectorAll('.card-tile[draggable]').forEach(el=>{
-        el.addEventListener('dragstart', e=> { e.dataTransfer.setData('text/plain', el.getAttribute('data-id')); });
-      });
-      document.querySelectorAll('.drop-slot').forEach(slot=>{
-        slot.addEventListener('dragover', e=> e.preventDefault());
-        slot.addEventListener('drop', e=>{
-          const id = e.dataTransfer.getData('text/plain');
-          const tile = document.querySelector(`.card-tile[draggable][data-id="${id}"]`);
-          if(tile){
-            slot.innerHTML = '';
-            slot.appendChild(tile);
-          }
-        });
-      });
-    },200);
-    document.getElementById('gameHint').innerText='Kéo ảnh vào nhãn phù hợp rồi bấm Hoàn thành';
-  } else if(g==='find_nhatu'){
-    title.innerText = 'Tìm chi tiết - quan sát hình';
-    body.innerHTML = `<div><img src="https://upload.wikimedia.org/wikipedia/commons/3/3d/Nha_Tu_Phu_Quoc.jpg" style="width:100%;border-radius:8px"><div class="mt-2"><p>Trong ảnh, vật dụng nào thường dùng để giam giữ tù nhân?</p><div><label><input type="radio" name="f" value="a"> Máy ghi âm</label></div><div><label><input type="radio" name="f" value="b"> Lồng kính</label></div><div><label><input type="radio" name="f" value="c"> Buồng giam</label></div></div></div>`;
-    document.getElementById('gameHint').innerText='Quan sát ảnh và chọn câu đúng';
-  } else if(g==='memory_trungtruc'){
-    title.innerText = 'Memory - ghép sự kiện (Đình Nguyễn Trung Trực)';
-    // simple memory with 6 cards
-    const pairs = [
-      {k:'Nguyễn Trung Trực', v:'Lãnh tụ nghĩa quân'},
-      {k:'Sự kiện A', v:'Chiến thắng B'},
-      {k:'Lễ hội', v:'Tháng 8 âm lịch'}
-    ];
-    const cards = pairs.flatMap((p,i)=>[{type:'k',text:p.k},{type:'v',text:p.v}]).sort(()=>Math.random()-0.5);
-    let html = `<div class="memory-grid">` + cards.map((c,idx)=>`<div class="card-tile mem" data-idx="${idx}" data-text="${c.text}">${c.text}</div>`).join('') + `</div>`;
-    body.innerHTML = html;
-    // memory logic
-    setTimeout(()=> {
-      let first=null;
-      document.querySelectorAll('.mem').forEach(el=>{
-        el.addEventListener('click', ()=>{
-          el.style.background='#ffd';
-          if(!first){ first=el; }
-          else {
-            if(first.getAttribute('data-text') === el.getAttribute('data-text')){
-              // same card clicked twice -> keep
-            } else {
-              // reveal then hide
-              setTimeout(()=> { first.style.background=''; el.style.background=''; first=null; },700);
-            }
-          }
-        });
-      });
-    },100);
-    document.getElementById('gameHint').innerText='Click lật các thẻ để ghép đôi (demo đơn giản)';
-  } else if(g==='quiz_trungtruc'){
-    title.innerText = 'Quiz Đình Nguyễn Trung Trực (5 câu)';
-    const qs = [
-      {q:'Nguyễn Trung Trực là ai?', a:['Nhà thơ','Lãnh tụ nghĩa quân','Nghệ sĩ'], correct:1},
-      {q:'Lễ hội đình thường tổ chức vào tháng nào?', a:['Tháng 1','Tháng 8 âm lịch','Tháng 12'], correct:1},
-      {q:'Giá trị cần học từ nhân vật này là:', a:['Tinh thần độc lập','Nói nhiều','Ăn uống'], correct:0},
-      {q:'Đình thường là nơi để:', a:['Cúng lễ & sinh hoạt cộng đồng','Xuất khẩu hàng hóa','Trồng tiêu'], correct:0},
-      {q:'Hoàn thành quiz này giúp:', a:['Nhận huy hiệu','Biết nấu ăn','Xem phim'], correct:0}
-    ];
-    let html = qs.map((it,idx)=>`<div class="quiz-item"><div><strong>${idx+1}. ${it.q}</strong></div>${it.a.map((opt,i)=>`<div><label><input type="radio" name="qT${idx}" value="${i}"> ${opt}</label></div>`).join('')}</div>`).join('');
-    body.innerHTML = html;
-    document.getElementById('gameHint').innerText='Chọn đáp án và bấm Hoàn thành';
-  } else if(g==='timeline_trungtruc'){
-    title.innerText = 'Sắp xếp mốc thời gian (Đình)';
-    const items = ['Sự kiện A (năm 18xx)','Sự kiện B (năm 19xx)','Sự kiện C (năm 20xx)'];
-    const html = `<ul class="timeline-list">${items.sort(()=>Math.random()-0.5).map(it=>`<li draggable="true">${it}</li>`).join('')}</ul>`;
-    body.innerHTML = html;
-    // simple drag reorder (not persisted)
-    let dragEl = null;
-    setTimeout(()=> {
-      document.querySelectorAll('.timeline-list li').forEach(li=>{
-        li.addEventListener('dragstart', e=> dragEl = li);
-        li.addEventListener('dragover', e=> e.preventDefault());
-        li.addEventListener('drop', e=> {
-          e.preventDefault();
-          if(dragEl && dragEl !== li){
-            const parent = li.parentNode;
-            parent.insertBefore(dragEl, li.nextSibling);
-          }
-        });
-      });
-    },100);
-    document.getElementById('gameHint').innerText='Kéo thả để sắp xếp thứ tự hợp lý';
-  } else {
-    body.innerHTML = '<div>Mini-game demo chưa được hỗ trợ.</div>';
-  }
-}
-
-/* submitGame: evaluate simple games */
-function submitGame(g,d){
-  const body = document.getElementById('gameBody');
-  let success=false;
-  if(g==='quiz_nhatu'){
-    const qs = body.querySelectorAll('.quiz-item');
-    let score=0;
-    const answers = [1,0,0,0,2]; // as defined earlier
-    qs.forEach((it,idx)=> {
-      const sel = it.querySelector('input[type=radio]:checked');
-      if(sel && Number(sel.value) === answers[idx]) score++;
-    });
-    if(score >= 4) success = true;
-    alert('Bạn được ' + score + '/5 điểm');
-  } else if(g==='match_nhatu'){
-    // check each slot containing tile with matching label - simple check: presence of all tiles in slots
-    const slots = document.querySelectorAll('.drop-slot');
-    let good = 0;
-    slots.forEach(slot=>{
-      const child = slot.querySelector('.card-tile[draggable]');
-      if(child){
-        good++;
-      }
-    });
-    if(good === slots.length) success = true;
-    alert(`Bạn đã đặt ${good}/${slots.length} ảnh vào nhãn`);
-  } else if(g==='find_nhatu'){
-    const sel = body.querySelector('input[name=f]:checked');
-    if(sel && sel.value === 'c') success = true;
-    alert(sel ? 'Bạn chọn: ' + sel.parentNode.innerText : 'Bạn chưa chọn đáp án');
-  } else if(g==='memory_trungtruc'){
-    // demo: assume success (since no real logic)
-    success = true;
-    alert('Memory: (demo) xem như bạn hoàn thành');
-  } else if(g==='quiz_trungtruc'){
-    const qs = body.querySelectorAll('.quiz-item');
-    let score=0;
-    const answers = [1,1,0,0,0];
-    qs.forEach((it,idx)=> {
-      const sel = it.querySelector('input[type=radio]:checked');
-      if(sel && Number(sel.value) === answers[idx]) score++;
-    });
-    if(score >= 4) success = true;
-    alert('Bạn được ' + score + '/5 điểm');
-  } else if(g==='timeline_trungtruc'){
-    // rudimentary: accept as success
-    success = true;
-    alert('Sắp xếp: (demo) chấm thành công');
-  } else {
-    alert('Game chưa xử lý');
-  }
-
-  if(success){
-    // record game done and mark visited
-    recordGame(d.id, g);
-    markVisited(d.id);
-    // award per-site small badge? keep global badges as final awards
-    // show celebration
-    confetti({particleCount:60,spread:50,origin:{y:0.5}});
-    // close game modal
-    gameModal.hide();
-  }
-}
-
-/* event: when user clicks a choice in selector -> start appropriate game */
-function startGame(g,d){
-  // populate game UI
-  startGameInstance(g,d);
-  // show modal
-  gameModal.show();
-}
-
-/* ========== Auth (simple local demo) ========== */
 document.getElementById('btn-register').addEventListener('click', ()=> {
-  document.getElementById('authTitle').innerText = 'Đăng ký';
-  document.getElementById('authSubmit').onclick = authRegister;
-  document.getElementById('authAlert').classList.add('d-none');
+  document.getElementById('authTitle').innerText = 'Đăng ký'; document.getElementById('authSubmit').onclick = authRegister; document.getElementById('authAlert').classList.add('d-none');
   authModal.show();
 });
 document.getElementById('btn-login').addEventListener('click', ()=> {
-  document.getElementById('authTitle').innerText = 'Đăng nhập';
-  document.getElementById('authSubmit').onclick = authLogin;
-  document.getElementById('authAlert').classList.add('d-none');
+  document.getElementById('authTitle').innerText = 'Đăng nhập'; document.getElementById('authSubmit').onclick = authLogin; document.getElementById('authAlert').classList.add('d-none');
   authModal.show();
 });
 document.getElementById('btn-logout').addEventListener('click', ()=> {
   localStorage.removeItem(STORAGE_USER);
-  document.getElementById('btn-login').style.display='';
-  document.getElementById('btn-register').style.display='';
-  document.getElementById('btn-logout').style.display='none';
-  alert('Bạn đã đăng xuất (demo).');
+  refreshAuthUI();
+  alert('Đăng xuất thành công (demo).');
 });
 
+/* auth functions */
 function authRegister(){
   const name = document.getElementById('inName').value.trim();
   const email = document.getElementById('inEmail').value.trim();
   const pass = document.getElementById('inPass').value;
   if(!name || !email || !pass){ showAuthError('Điền đủ tên, email, mật khẩu'); return; }
-  // simple validation & store
+  // simple store (demo) — overwrite allowed
   const u = {name,email,pass};
   saveUser(u);
   alert('Đăng ký thành công (demo). Vui lòng đăng nhập.');
@@ -611,30 +340,421 @@ function authLogin(){
   const u = loadUser();
   if(!u || u.email !== email || u.pass !== pass){ showAuthError('Email hoặc mật khẩu không đúng (demo)'); return; }
   // login success
-  document.getElementById('btn-login').style.display='none';
-  document.getElementById('btn-register').style.display='none';
-  document.getElementById('btn-logout').style.display='inline-block';
   authModal.hide();
-  alert('Đăng nhập thành công. Chào ' + u.name);
-  renderBadges();
+  refreshAuthUI();
+  alert('Đăng nhập thành công. Xin chào ' + u.name);
 }
-function showAuthError(msg){ const a = document.getElementById('authAlert'); a.innerText = msg; a.classList.remove('d-none'); }
+function showAuthError(msg){ const a=document.getElementById('authAlert'); a.innerText=msg; a.classList.remove('d-none'); }
+function refreshAuthUI(){
+  const u = loadUser();
+  if(u){ document.getElementById('btn-login').style.display='none'; document.getElementById('btn-register').style.display='none'; document.getElementById('btn-logout').style.display='inline-block'; document.getElementById('btn-profile').style.display='inline-block'; document.getElementById('btn-profile').innerText = u.name; document.getElementById('profile-info').innerText = `Xin chào, ${u.name} — ${u.email}`; renderBadges(); } else { document.getElementById('btn-login').style.display='inline-block'; document.getElementById('btn-register').style.display='inline-block'; document.getElementById('btn-logout').style.display='none'; document.getElementById('btn-profile').style.display='none'; document.getElementById('profile-info').innerText = 'Bạn chưa đăng nhập.'; renderBadges(); }
+}
+btnProfileNav.addEventListener('click', ()=> { showMap(); window.scrollTo(0,0); });
 
-/* initial render */
+/* ---------- Map init ---------- */
+const map = L.map('map', {zoomControl:true}).setView([10.28,103.98], 11);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19, attribution:'© OpenStreetMap'}).addTo(map);
+
+function makeIcon(hasGame){
+  const color = hasGame ? '#C62828' : '#1976D2';
+  return L.divIcon({className:'custom-pin', html:`<div style="background:${color};width:18px;height:18px;border-radius:50%;border:3px solid white"></div>`, iconSize:[24,24], iconAnchor:[12,12]});
+}
+
+/* render markers */
+DI_TICH.forEach(p=>{
+  const m = L.marker([p.lat,p.lng], {icon: makeIcon(p.games.length>0)}).addTo(map);
+  m.on('click', ()=> openDiModal(p));
+});
+
+/* modal instances */
+const diModal = new bootstrap.Modal(document.getElementById('diModal'));
+const gameModal = new bootstrap.Modal(document.getElementById('gameModal'));
+
+/* open di tích modal (with details) */
+function openDiModal(p){
+  document.getElementById('diTitle').innerText = p.name;
+  // build html content with full details
+  const extras = p.extra.map(x=>`<li>${x}</li>`).join('');
+  const html = `
+    <div class="row">
+      <div class="col-md-5"><img src="${p.img}" alt="${p.name}" style="width:100%;border-radius:8px;object-fit:cover"></div>
+      <div class="col-md-7">
+        <h5 class="diatic-title">${p.name}</h5>
+        <p style="margin:0">${p.address}</p>
+        <p style="margin-top:8px;color:#333">${p.note}</p>
+        ${extras ? `<ul>${extras}</ul>` : ''}
+      </div>
+    </div>
+  `;
+  document.getElementById('diBody').innerHTML = html;
+  document.getElementById('diCoords').innerText = `${p.lat.toFixed(6)}, ${p.lng.toFixed(6)}`;
+  const btnPlay = document.getElementById('btn-play');
+  if(p.games && p.games.length){
+    btnPlay.style.display='inline-block';
+    btnPlay.onclick = ()=> { diModal.hide(); openGamePicker(p); };
+  } else { btnPlay.style.display='none'; btnPlay.onclick=null; }
+  // check-in button
+  document.getElementById('btn-checkin').onclick = ()=> {
+    const u = loadUser();
+    if(!u){ alert('Vui lòng đăng nhập trước khi check-in.'); return; }
+    markVisited(p.id);
+    awardBadgeSite(p.id,p.name);
+  };
+  diModal.show();
+}
+
+/* ---------- Badges & check-in logic ---------- */
+/* Badges rules (as you specified):
+  - Check-in at a site => badge per site (site badge)
+  - Complete a quiz => "Nhà sử học tập sự"
+  - Complete both quizzes => "Nhà sử học tài ba"
+  - Complete a puzzle (image assembly) => "Thợ ghép tranh tài ba"
+  - Complete both puzzles => "Nhà phục chế tài hoa"
+  - Collect all badges => "Người giữ lửa di sản"
+*/
+function getBadges(){ return loadBadges(); }
+function awardBadge(id,name,icon){
+  const arr = getBadges();
+  if(arr.find(b=>b.id===id)) return false;
+  arr.push({id,name,icon:icon || `https://via.placeholder.com/64/FFD54F/000?text=${encodeURIComponent(name.charAt(0))}`});
+  saveBadges(arr);
+  renderBadges();
+  confetti({particleCount:80,spread:60,origin:{y:0.4}});
+  return true;
+}
+function renderBadges(){
+  const wrap = document.getElementById('badge-area');
+  wrap.innerHTML = '';
+  const arr = getBadges();
+  arr.forEach(b=>{
+    const el = document.createElement('div');
+    el.innerHTML = `<div style="text-align:center"><img src="${b.icon}" class="badge-img"><div style="font-size:12px">${b.name}</div></div>`;
+    wrap.appendChild(el);
+  });
+  // also show in profile area if logged in
+  const u = loadUser();
+  if(u){
+    document.getElementById('profile-info').innerHTML = `Xin chào ${u.name} — <div style="margin-top:6px">Huy hiệu: ${arr.map(x=>x.name).join(', ') || 'Chưa có'}</div>`;
+  }
+}
+
+/* mark visited and award site badge */
+function markVisited(siteId){
+  const v = loadVisited();
+  if(!v.includes(siteId)){ v.push(siteId); saveVisited(v); checkAggregateBadges(); renderBadges(); }
+}
+function awardBadgeSite(siteId, siteName){
+  const id = `site_${siteId}`;
+  const name = `${siteName}`;
+  awardBadge(id,name,`https://via.placeholder.com/64/C33/fff?text=${encodeURIComponent(siteName.split(' ')[0].charAt(0))}`);
+}
+
+/* record game completion */
+function recordDone(siteId, gameId){
+  const o = loadDone();
+  if(!o[siteId]) o[siteId]=[];
+  if(!o[siteId].includes(gameId)){ o[siteId].push(gameId); saveDone(o); checkAggregateBadges(); renderBadges(); }
+}
+
+/* check aggregate badges */
+function checkAggregateBadges(){
+  const done = loadDone();
+  const visited = loadVisited();
+  // badge1: complete all games at Nhà tù (3)
+  if(done['nha-tu'] && done['nha-tu'].length >= 3) awardBadge('badge_nhatu_all','Anh hùng bảo vệ biển đảo');
+  // badge2: complete all games at Đình NTT (3)
+  if(done['dinh-ntt'] && done['dinh-ntt'].length >= 3) awardBadge('badge_dinh_all','Chính khí Nguyễn Trung Trực');
+  // quiz badges: if completed quiz at nha-tu or dinh -> award "Nhà sử học tập sự" per quiz, and if both quizzes done award "Nhà sử học tài ba"
+  const quizzesDone = [];
+  if(done['nha-tu'] && done['nha-tu'].includes('quiz_nhatu')) quizzesDone.push('nha-tu');
+  if(done['dinh-ntt'] && done['dinh-ntt'].includes('quiz_trungtruc')) quizzesDone.push('dinh-ntt');
+  if(done['nha-tu'] && done['nha-tu'].includes('quiz_nhatu')) awardBadge('badge_quiz_nhatu','Nhà sử học tập sự (Nhà tù)');
+  if(done['dinh-ntt'] && done['dinh-ntt'].includes('quiz_trungtruc')) awardBadge('badge_quiz_dinh','Nhà sử học tập sự (Đình)');
+  if(quizzesDone.length >= 2) awardBadge('badge_quiz_all','Nhà sử học tài ba');
+  // puzzle badges
+  const puzzlesDone = [];
+  if(done['nha-tu'] && (done['nha-tu'].includes('puzzle_nhatu') || done['nha-tu'].includes('puzzle_nhatu2'))) puzzlesDone.push('nha-tu');
+  if(done['dinh-ntt'] && (done['dinh-ntt'].includes('puzzle_trungtruc') || done['dinh-ntt'].includes('puzzle_trungtruc2'))) puzzlesDone.push('dinh-ntt');
+  if(done['nha-tu'] && done['nha-tu'].includes('puzzle_nhatu')) awardBadge('badge_puzzle_nhatu','Thợ ghép tranh tài ba (Nhà tù)');
+  if(done['dinh-ntt'] && done['dinh-ntt'].includes('puzzle_trungtruc')) awardBadge('badge_puzzle_dinh','Thợ ghép tranh tài ba (Đình)');
+  // combined puzzle master
+  if(puzzlesDone.length >= 2) awardBadge('badge_puzzle_all','Nhà phục chế tài hoa');
+  // final all badges
+  const all = getBadges();
+  const needed = [
+    // site badges
+    `site_nha-tu`,`site_dinh-ntt`,`site_dinh-cau`,`site_chua`,`site_ham-ninh`,`site_nha-thung`,`site_baotang`,
+    // some others: quiz & puzzles
+    'badge_quiz_all','badge_puzzle_all'
+  ];
+  const hasAll = needed.every(k => all.find(x=>x.id===k));
+  if(hasAll) awardBadge('badge_master','Người giữ lửa di sản','https://via.placeholder.com/64/FF7043/fff?text=%F0%9F%94%A5');
+}
+
+/* ---------- Game picker & implementations ---------- */
+function openGamePicker(site){
+  document.getElementById('gameTitle').innerText = `Mini-game — ${site.name}`;
+  // build a selection
+  const html = `<div><p>Chọn mini-game:</p><div class="d-flex gap-2 flex-wrap">` +
+    site.games.map(g=>`<button class="btn btn-outline-dark game-choice" data-game="${g}">${labelGame(g)}</button>`).join('') +
+    `</div></div>`;
+  document.getElementById('gameBody').innerHTML = html;
+  document.getElementById('gameNote').innerText = 'Mỗi mini-game có 1–6 bước. Kết quả sẽ lưu vào hồ sơ của bạn (demo).';
+  document.getElementById('gameSubmit').style.display='none';
+  document.getElementById('gameNext').style.display='none';
+  gameModal.show();
+  // attach click listeners
+  document.querySelectorAll('.game-choice').forEach(btn=> btn.addEventListener('click', ()=> {
+    const g = btn.dataset.game;
+    startGameInstance(g, site);
+  }));
+}
+
+function labelGame(id){
+  const map = {
+    'quiz_nhatu':'Quiz (Nhà tù)',
+    'puzzle_nhatu':'Ghép mảnh (Nhà tù)',
+    'observe_nhatu':'Quan sát & trả lời (Nhà tù)',
+    'quiz_trungtruc':'Quiz (Đình)',
+    'puzzle_trungtruc':'Ghép mảnh (Đình)',
+    'timeline_trungtruc':'Sắp xếp mốc (Đình)'
+  };
+  return map[id]||id;
+}
+
+/* Game: QUIZ that shows one question at a time with immediate feedback & explanation */
+const QUIZZES = {
+  'quiz_nhatu': {
+    title:'Quiz Nhà tù Phú Quốc',
+    items:[
+      {
+        q:'Nhà tù Phú Quốc còn được biết đến với tên gọi nào trong lịch sử?',
+        opts:['Trại giam Tù binh Phú Quốc','Nhà lao Cây Dừa','Trại giam Tù binh Chiến tranh Phú Quốc'],
+        ans:1,
+        explain:'Đáp án B. Nhà tù Phú Quốc thường được gọi là Nhà lao Cây Dừa.'
+      },
+      {
+        q:'Nhà tù Phú Quốc được công nhận Di tích Quốc gia đặc biệt vào năm nào?',
+        opts:['Năm 2013','Năm 2014','Năm 2015'],
+        ans:2,
+        explain:'Đáp án C. (Theo hồ sơ di tích được công nhận trong các năm gần đây.)'
+      },
+      {
+        q:'"Địa ngục trần gian" mô tả điều gì ở Nhà tù Phú Quốc?',
+        opts:['Khí hậu khắc nghiệt','Chế độ giam cầm và tra tấn man rợ','Sự đông đúc của tù binh'],
+        ans:1,
+        explain:'Đáp án B. Cụm từ dùng để nhấn mạnh những hành vi tra tấn dã man.'
+      },
+      {
+        q:'Một trong những phương thức đấu tranh nổi tiếng tại đây là gì?',
+        opts:['Tuyệt thực','Đào hầm vượt ngục','Tổ chức diệt mật báo','Tất cả các phương án trên'],
+        ans:3,
+        explain:'Đáp án D. Các tù binh dùng nhiều hình thức đấu tranh để giữ phẩm giá và tìm tự do.'
+      },
+      {
+        q:'Bài học ý nghĩa nhất rút ra từ di tích là gì?',
+        opts:['Trân trọng hòa bình','Biết ơn thế hệ trước','Tinh thần đấu tranh','Tất cả trên'],
+        ans:3,
+        explain:'Đáp án D. Tất cả các yếu tố đều là thông điệp quan trọng.'
+      },
+      {
+        q:'Khi tham quan di tích nên có thái độ như thế nào?',
+        opts:['Trang nghiêm, tôn trọng','Vui vẻ như đi chơi','Chỉ chụp ảnh selfie'],
+        ans:0,
+        explain:'Đáp án A. Thể hiện sự tôn kính và học hỏi từ quá khứ.'
+      }
+    ]
+  },
+  'quiz_trungtruc': {
+    title:'Quiz Đình Nguyễn Trung Trực',
+    items:[
+      {
+        q:'Câu nói "Bao giờ Tây nhổ hết cỏ nước Nam..." Nguyễn Trung Trực nói trong hoàn cảnh nào?',
+        opts:['Khi tấn công đồn Kiên Giang','Khi khích lệ nghĩa quân trên sông Nhật Tảo','Khi thực dân Pháp dụ hàng ông','Trước khi bị chém đầu'],
+        ans:2,
+        explain:'Đáp án C. Khi bị dụ hàng, ông có câu nói nổi tiếng khẳng khái.'
+      },
+      {
+        q:'Chiến thắng đốt tàu Pháp do Nguyễn Trung Trực lãnh đạo là trận nào?',
+        opts:['Trận Nhật Tảo','Trận Rạch Giá','Trận Tân An','Trận Cần Giuộc'],
+        ans:0,
+        explain:'Đáp án A. Trận Nhật Tảo (10/12/1861) là chiến công nổi bật.'
+      },
+      {
+        q:'Lễ hội chính tại đình thường tổ chức vào thời gian nào?',
+        opts:['26-28 tháng Chạp','26-28 tháng 8 (âm)','26-28 tháng 10 (âm)','10/3 Giỗ Tổ Hùng Vương'],
+        ans:2,
+        explain:'Đáp án C. Lễ hội kỷ niệm hy sinh của ông diễn ra cuối tháng 10 âm lịch.'
+      },
+      {
+        q:'Nguyễn Trung Trực hy sinh ngày nào?',
+        opts:['16/6/1867','27/10/1868','10/12/1861','30/3/1870'],
+        ans:1,
+        explain:'Đáp án B. Ông bị chém đầu tại Rạch Giá ngày 27/10/1868.'
+      },
+      {
+        q:'Kiến trúc của đình mang phong cách nào?',
+        opts:['Pháp cổ điển','Trung Hoa','Nam Bộ truyền thống','Hiện đại'],
+        ans:2,
+        explain:'Đáp án C. Đình mang đậm kiến trúc đình-làng Nam Bộ.'
+      }
+    ]
+  }
+};
+
+/* Start quiz run: show one question at a time with explanation */
+let currentQuiz = null;
+let currentQIndex = 0;
+function startQuiz(quizId, site){
+  const qset = QUIZZES[quizId];
+  if(!qset){ alert('Quiz chưa có nội dung.'); return; }
+  currentQuiz = {id:quizId, site:site, qset:qset};
+  currentQIndex = 0;
+  renderCurrentQuestion();
+  document.getElementById('gameSubmit').style.display = 'none';
+  document.getElementById('gameNext').style.display = 'inline-block';
+  document.getElementById('gameTitle').innerText = qset.title;
+  document.getElementById('gameNote').innerText = `Trả lời từng câu — bạn sẽ nhận phản hồi ngay sau mỗi câu.`;
+  gameModal.show();
+}
+function renderCurrentQuestion(){
+  const body = document.getElementById('gameBody');
+  const qobj = currentQuiz.qset.items[currentQIndex];
+  let html = `<div><strong>Câu ${currentQIndex+1} / ${currentQuiz.qset.items.length}</strong><p style="margin-top:8px"><em>${qobj.q}</em></p>`;
+  html += `<div>`;
+  qobj.opts.forEach((opt,i)=> html += `<div style="margin-bottom:6px"><label><input type="radio" name="opt" value="${i}"> ${opt}</label></div>`);
+  html += `</div><div id="qFeedback" style="margin-top:10px"></div></div>`;
+  body.innerHTML = html;
+  document.getElementById('gameNext').innerText = currentQIndex+1 < currentQuiz.qset.items.length ? 'Trả lời & Tiếp' : 'Trả lời & Hoàn thành';
+  document.getElementById('gameNext').onclick = handleAnswerAndNext;
+}
+function handleAnswerAndNext(){
+  const sel = document.querySelector('input[name="opt"]:checked');
+  if(!sel){ alert('Vui lòng chọn 1 đáp án'); return; }
+  const chosen = Number(sel.value);
+  const qobj = currentQuiz.qset.items[currentQIndex];
+  const fb = document.getElementById('qFeedback');
+  if(chosen === qobj.ans){
+    fb.innerHTML = `<div class="correct">Đáp án đúng ✓</div><div class="explain">${qobj.explain}</div>`;
+  } else {
+    fb.innerHTML = `<div class="wrong">Đáp án sai ✗</div><div class="explain">Đáp án đúng: <strong>${qobj.opts[qobj.ans]}</strong><br>${qobj.explain}</div>`;
+  }
+  // brief pause then next or finish
+  setTimeout(()=> {
+    currentQIndex++;
+    if(currentQIndex < currentQuiz.qset.items.length){
+      renderCurrentQuestion();
+    } else {
+      // quiz finished: record and show final
+      recordDone(currentQuiz.site.id, currentQuiz.id);
+      alert('Bạn đã hoàn thành quiz: ' + currentQuiz.qset.title);
+      gameModal.hide();
+    }
+  }, 700);
+}
+
+/* Simpler puzzle: user drags pieces into slots (basic). We'll use a very simple implementation */
+function startPuzzle(puzzleId, site){
+  // two puzzle types: puzzle_nhatu, puzzle_trungtruc
+  const body = document.getElementById('gameBody');
+  document.getElementById('gameTitle').innerText = puzzleId.includes('nhatu') ? 'Ghép ảnh — Nhà tù' : 'Ghép ảnh — Đình';
+  document.getElementById('gameNote').innerText = 'Kéo các mảnh vào ô trống để hoàn thành bức ảnh. (Demo đơn giản)';
+  // use 4-piece puzzle demo
+  const img = site.img;
+  const pieces = [0,1,2,3].sort(()=>Math.random()-0.5);
+  let leftHtml = pieces.map((p,i)=>`<div class="card" style="width:100px;height:80px;margin:6px;padding:0;display:inline-block"><img src="${img}" style="width:100%;height:100%;object-fit:cover;object-position:${(p%2===0? 'left':'right')} ${(p<2? 'top':'bottom')}"></div>`).join('');
+  let rightHtml = `<div style="display:flex;gap:6px;flex-wrap:wrap"><div class="drop-slot" style="width:100px;height:80px;border:1px dashed #ccc;border-radius:6px"></div><div class="drop-slot" style="width:100px;height:80px;border:1px dashed #ccc;border-radius:6px"></div><div class="drop-slot" style="width:100px;height:80px;border:1px dashed #ccc;border-radius:6px"></div><div class="drop-slot" style="width:100px;height:80px;border:1px dashed #ccc;border-radius:6px"></div></div>`;
+  body.innerHTML = `<p>Kéo mảnh vào ô để hoàn thành (demo đơn giản)</p><div id="pLeft">${leftHtml}</div><div class="mt-3" id="pRight">${rightHtml}</div>`;
+  // make draggable (simple click-to-move for demo)
+  document.querySelectorAll('#pLeft img').forEach(imgEl=>{
+    imgEl.style.cursor='pointer';
+    imgEl.addEventListener('click', ()=> {
+      // move first available slot
+      const slot = document.querySelector('.drop-slot:not(.filled)');
+      if(slot){ slot.innerHTML = ''; slot.appendChild(imgEl.cloneNode()); slot.classList.add('filled'); imgEl.remove(); }
+    });
+  });
+  document.getElementById('gameSubmit').style.display='inline-block';
+  document.getElementById('gameSubmit').onclick = ()=> {
+    const filled = document.querySelectorAll('.drop-slot.filled').length;
+    if(filled >= 4){
+      recordDone(site.id, puzzleId);
+      alert('Hoàn thành ghép mảnh (demo). Bạn nhận huy hiệu tương ứng.');
+      gameModal.hide();
+    } else alert('Bạn chưa ghép xong (demo).');
+  };
+  gameModal.show();
+}
+
+/* observe game (simple single-question observation) */
+function startObserve(id, site){
+  const body = document.getElementById('gameBody');
+  document.getElementById('gameTitle').innerText = 'Quan sát & Trả lời';
+  document.getElementById('gameNote').innerText = 'Xem ảnh, chọn đáp án đúng.';
+  body.innerHTML = `<div><img src="${site.img}" style="width:100%;border-radius:8px"><p style="margin-top:8px">Trong ảnh, vật dụng nào thường dùng để giam giữ tù nhân?</p>
+    <div><label><input type="radio" name="obs" value="a"> Máy ghi âm</label></div>
+    <div><label><input type="radio" name="obs" value="b"> Lồng kính</label></div>
+    <div><label><input type="radio" name="obs" value="c"> Buồng giam</label></div>
+  </div>`;
+  document.getElementById('gameSubmit').style.display='inline-block';
+  document.getElementById('gameSubmit').onclick = ()=> {
+    const sel = document.querySelector('input[name="obs"]:checked');
+    if(!sel){ alert('Chọn đáp án'); return; }
+    if(sel.value==='c'){ recordDone(site.id, id); alert('Đúng! Bạn hoàn thành.'); gameModal.hide(); } else { alert('Sai — hãy xem lại ảnh và thử lại.'); }
+  };
+  gameModal.show();
+}
+
+/* timeline simple */
+function startTimeline(id, site){
+  const body = document.getElementById('gameBody');
+  document.getElementById('gameTitle').innerText = 'Sắp xếp mốc thời gian (demo)';
+  document.getElementById('gameNote').innerText = 'Kéo thả để sắp xếp thứ tự (demo không chấm chính xác).';
+  const items = ['Sự kiện A (năm 18xx)','Sự kiện B (năm 19xx)','Sự kiện C (năm 20xx)'].sort(()=>Math.random()-0.5);
+  body.innerHTML = `<ul id="tl" style="padding-left:18px">${items.map(it=>`<li draggable="true" style="padding:8px;border:1px solid #eee;margin-bottom:6px;background:white;border-radius:6px">${it}</li>`).join('')}</ul>`;
+  // drag reorder simple
+  let dragEl = null;
+  setTimeout(()=> {
+    document.querySelectorAll('#tl li').forEach(li=>{
+      li.addEventListener('dragstart', e=> dragEl = li);
+      li.addEventListener('dragover', e=> e.preventDefault());
+      li.addEventListener('drop', e=> { e.preventDefault(); if(dragEl && dragEl !== li){ const parent = li.parentNode; parent.insertBefore(dragEl, li.nextSibling); } });
+    });
+  },50);
+  document.getElementById('gameSubmit').style.display='inline-block';
+  document.getElementById('gameSubmit').onclick = ()=> {
+    recordDone(site.id, id);
+    alert('Hoàn thành (demo).');
+    gameModal.hide();
+  };
+  gameModal.show();
+}
+
+/* startGameInstance wrapper called from picker */
+function startGameInstance(gid, site){
+  document.getElementById('gameBody').innerHTML = '';
+  document.getElementById('gameSubmit').style.display='none';
+  document.getElementById('gameNext').style.display='none';
+  if(gid.startsWith('quiz_')) startQuiz(gid, site);
+  else if(gid.startsWith('puzzle_')) startPuzzle(gid, site);
+  else if(gid.startsWith('observe_')) startObserve(gid, site);
+  else if(gid.startsWith('timeline_')) startTimeline(gid, site);
+  else { alert('Game chưa được hỗ trợ'); }
+}
+
+/* ---------- recordGame function used earlier ---------- */
+function recordDone(siteId, gameId){ // reuse defined above
+  const o = loadDone();
+  if(!o[siteId]) o[siteId]=[];
+  if(!o[siteId].includes(gameId)){ o[siteId].push(gameId); saveDone(o); checkAggregateBadges(); renderBadges(); }
+}
+
+/* ---------- initial UI state ---------- */
+refreshAuthUI();
 renderBadges();
 
-/* Mark visit when user clicks marker: we do that in openDiModal already when they open modal? We'll mark visited on opening */
-(function attachVisitOnOpen(){
-  // modified openDiModal earlier to mark visited
-  // We'll mark when modal is shown
-  const modalEl = document.getElementById('diModal');
-  modalEl.addEventListener('shown.bs.modal', function (event) {
-    const title = document.getElementById('diModalTitle').innerText;
-    const d = diTich.find(x=>x.name === title);
-    if(d) markVisited(d.id);
-  });
-})();
-
+/* ensure map resizes when switching pages */
+window.addEventListener('resize', ()=> map.invalidateSize());
 </script>
 </body>
 </html>
