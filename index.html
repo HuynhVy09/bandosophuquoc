@@ -184,12 +184,19 @@
 
 <script>
 /* ---------------------------
-  Dữ liệu điểm (chi tiết theo input của bạn)
-  NOTE: một số toạ độ trong input là chuỗi lớn (không hợp lệ). 
-  Mình đã giữ toạ độ gần đúng hợp lý để map hiển thị; 
-  bạn có thể thay chính xác bằng cách kiểm tra trên Google Maps và cập nhật vào mảng bên dưới.
+  Dữ liệu điểm (đã cập nhật với tọa độ chính xác của bạn)
 ----------------------------*/
 const DI_TICH = [
+  {
+    id:'chua',
+    name:'Chùa Hộ Quốc',
+    address:'426H+GVQ, Dương Tơ, Phú Quốc, Kiên Giang, Việt Nam',
+    note:'Thiền viện Trúc Lâm Hộ Quốc — kiến trúc tâm linh lớn, phong cách cổ truyền Việt.',
+    extra:['Ngôi chùa lớn nhất Phú Quốc', 'Kiến trúc truyền thống Việt Nam', 'Không gian tâm linh thanh tịnh'],
+    lat:10.110028, lng:104.029056, // 10°06'36.1"N 104°01'44.6"E
+    games:[],
+    img:'https://upload.wikimedia.org/wikipedia/commons/0/0f/Chua.jpg'
+  },
   {
     id:'nha-tu',
     name:'Nhà tù Phú Quốc',
@@ -200,9 +207,49 @@ const DI_TICH = [
       'Còn gọi: Nhà lao Cây Dừa',
       'Khoảng 40.000 tù binh từng bị giam; nhiều tù nhân bị tra tấn dã man. Có 45 cuộc vượt ngục ghi nhận.'
     ],
-    lat:10.2996, lng:103.9697,
+    lat:10.044417, lng:104.017639, // 10°02'39.9"N 104°01'03.5"E
     games:['quiz_nhatu','puzzle_nhatu','observe_nhatu'],
     img:'https://upload.wikimedia.org/wikipedia/commons/3/3d/Nha_Tu_Phu_Quoc.jpg'
+  },
+  {
+    id:'nha-thung',
+    name:'Nhà thùng nước mắm Phú Quốc (Phụng Hưng)',
+    address:'471 Đ. Nguyễn Văn Cừ, Khu 2, Phú Quốc, Kiên Giang',
+    note:'Nhà thùng nước mắm truyền thống; nghề truyền thống của đảo.',
+    extra:['Lịch sử: hàng trăm năm, phương thức ủ muối truyền thống', 'Nước mắm Phú Quốc nổi tiếng thơm ngon'],
+    lat:10.044917, lng:104.017444, // 10°02'41.7"N 104°01'02.8"E
+    games:[],
+    img:'https://upload.wikimedia.org/wikipedia/commons/6/62/Phu_Quoc_fish_sauce_barrels.jpg'
+  },
+  {
+    id:'ham-ninh',
+    name:'Làng chài Hàm Ninh',
+    address:'52JV+6XX, TL47, Rạch Hàm, Phú Quốc, Kiên Giang, Việt Nam',
+    note:'Làng chài cổ, nổi tiếng hải sản tươi, ghẹ Hàm Ninh.',
+    extra:['Làng chài truyền thống lâu đời', 'Nổi tiếng với ghẹ Hàm Ninh tươi ngon', 'Cảnh biển đẹp, bình yên'],
+    lat:10.180917, lng:104.048472, // 10°10'51.3"N 104°02'54.5"E
+    games:[],
+    img:'https://upload.wikimedia.org/wikipedia/commons/9/9b/Ham_Ninh_fishing_village.jpg'
+  },
+  {
+    id:'baotang',
+    name:'Bảo tàng Cội Nguồn',
+    address:'Phú Quốc, Kiên Giang',
+    note:'Bảo tàng trưng bày lịch sử-văn hóa địa phương',
+    extra:['Trưng bày lịch sử, văn hóa Phú Quốc', 'Bộ sưu tập cổ vật phong phú', 'Kiến trúc độc đáo'],
+    lat:10.192500, lng:103.967000, // 10°11'33.0"N 103°58'01.2"E
+    games:[],
+    img:'https://upload.wikimedia.org/wikipedia/commons/0/0e/Museum.jpg'
+  },
+  {
+    id:'dinh-cau',
+    name:'Dinh Cậu',
+    address:'Khu phố 2, Tp. Phú Quốc, Kiên Giang 92500, Việt Nam',
+    note:'Di tích thắng cảnh; tín ngưỡng của ngư dân, có lễ hội hàng năm (15–16/10 âm lịch).',
+    extra:['Xây dựng: 1937 (tu sửa 1997)','Biểu tượng tâm linh của người dân địa phương', 'Vị trí đẹp nhìn ra biển'],
+    lat:10.217194, lng:103.956500, // 10°13'01.9"N 103°57'23.4"E
+    games:[],
+    img:'https://upload.wikimedia.org/wikipedia/commons/2/2d/DinhCauPhuQuoc.jpg'
   },
   {
     id:'dinh-ntt',
@@ -214,59 +261,9 @@ const DI_TICH = [
       'Lễ giỗ tổ chức hàng năm (âm lịch) — hoạt động truyền thống hơn 100 năm',
       'Nguyễn Trung Trực nổi tiếng với chiến công đốt tàu Pháp trên sông Nhật Tảo.'
     ],
-    lat:10.2764, lng:103.9732,
+    lat:10.373306, lng:103.842972, // 10°22'23.9"N 103°50'34.7"E
     games:['quiz_trungtruc','puzzle_trungtruc','timeline_trungtruc'],
     img:'https://upload.wikimedia.org/wikipedia/commons/5/5f/Nguyen_Trung_Truc_temple.jpg'
-  },
-  {
-    id:'dinh-cau',
-    name:'Dinh Cậu',
-    address:'Khu phố 2, Tp. Phú Quốc, Kiên Giang 92500, Việt Nam',
-    note:'Di tích thắng cảnh; tín ngưỡng của ngư dân, có lễ hội hàng năm (15–16/10 âm lịch).',
-    extra:['Xây dựng: 1937 (tu sửa 1997)','Biểu tượng tâm linh của người dân địa phương'],
-    lat:10.2817, lng:103.9980,
-    games:[],
-    img:'https://upload.wikimedia.org/wikipedia/commons/2/2d/DinhCauPhuQuoc.jpg'
-  },
-  {
-    id:'chua',
-    name:'Chùa Hộ Quốc',
-    address:'426H+GVQ, Dương Tơ, Phú Quốc, Kiên Giang, Việt Nam',
-    note:'Thiền viện Trúc Lâm Hộ Quốc — kiến trúc tâm linh lớn, phong cách cổ truyền Việt.',
-    extra:[],
-    lat:10.3148, lng:103.9702,
-    games:[],
-    img:'https://upload.wikimedia.org/wikipedia/commons/0/0f/Chua.jpg'
-  },
-  {
-    id:'ham-ninh',
-    name:'Làng chài Hàm Ninh',
-    address:'52JV+6XX, TL47, Rạch Hàm, Phú Quốc, Kiên Giang, Việt Nam',
-    note:'Làng chài cổ, nổi tiếng hải sản tươi, ghẹ Hàm Ninh.',
-    extra:[],
-    lat:10.2865, lng:103.9957,
-    games:[],
-    img:'https://upload.wikimedia.org/wikipedia/commons/9/9b/Ham_Ninh_fishing_village.jpg'
-  },
-  {
-    id:'nha-thung',
-    name:'Nhà thùng nước mắm Phú Quốc (Phụng Hưng)',
-    address:'471 Đ. Nguyễn Văn Cừ, Khu 2, Phú Quốc, Kiên Giang',
-    note:'Nhà thùng nước mắm truyền thống; nghề truyền thống của đảo.',
-    extra:['Lịch sử: hàng trăm năm, phương thức ủ muối truyền thống'],
-    lat:10.021035, lng:103.958742,
-    games:[],
-    img:'https://upload.wikimedia.org/wikipedia/commons/6/62/Phu_Quoc_fish_sauce_barrels.jpg'
-  },
-  {
-    id:'baotang',
-    name:'Bảo tàng Cội Nguồn',
-    address:'Phú Quốc, Kiên Giang',
-    note:'Bảo tàng trưng bày lịch sử-văn hóa địa phương',
-    extra:[],
-    lat:10.2773, lng:103.9730,
-    games:[],
-    img:'https://upload.wikimedia.org/wikipedia/commons/0/0e/Museum.jpg'
   }
 ];
 
