@@ -443,7 +443,20 @@ function markVisited(siteId){
 function awardBadgeSite(siteId, siteName){
   const id = `site_${siteId}`;
   const name = `${siteName}`;
-  awardBadge(id,name,`https://via.placeholder.com/64/C33/fff?text=${encodeURIComponent(siteName.split(' ')[0].charAt(0))}`);
+  // Tạo mapping giữa siteId và URL ảnh huy hiệu
+  const badgeIcons = {
+    'chua': 'images/hhchua.jpg',
+    'nha-tu': 'images/hhnhatupq.jpg',
+    'nha-thung': 'images/hhnhathung.jpg',
+    'ham-ninh': 'images/hhlangchai.jpg',
+    'baotang': 'images/hhcoinguon.jpg',
+    'dinh-cau': 'images/hhdinhcau.jpg',
+    'dinh-ntt': 'images/hhdinhntt.jpg'
+  };
+  
+  const badgeIcon = badgeIcons[siteId] || `https://via.placeholder.com/64/C33/fff?text=${encodeURIComponent(siteName.split(' ')[0].charAt(0))}`;
+  
+  awardBadge(id, name, badgeIcon);
 }
 
 /* record game completion */
