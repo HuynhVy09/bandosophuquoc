@@ -29,7 +29,7 @@
   .wrong{color:#c62828;font-weight:700}
   .explain{font-size:0.95rem;color:#444}
   
-  /* CSS cho game ghép hình */
+  /* CSS cho game ghép hình - ĐÃ SỬA */
   .puzzle-container {
     text-align: center;
     padding: 20px;
@@ -55,6 +55,7 @@
     gap: 10px;
     justify-content: center;
     max-width: 600px;
+    min-height: 100px;
   }
   
   .puzzle-piece {
@@ -66,6 +67,7 @@
     transition: transform 0.2s;
     background-size: 400% 300%; /* Cho 4x3 grid */
     background-repeat: no-repeat;
+    touch-action: none; /* QUAN TRỌNG: Cho phép touch trên mobile */
   }
   
   .puzzle-piece:hover {
@@ -84,12 +86,14 @@
     gap: 2px;
     background-color: #f8f9fa;
     padding: 5px;
+    touch-action: none; /* QUAN TRỌNG: Cho phép touch trên mobile */
   }
   
   .puzzle-slot {
     border: 1px solid #eee;
     border-radius: 4px;
     transition: background-color 0.3s;
+    touch-action: none;
   }
   
   .puzzle-slot.hover {
@@ -98,6 +102,13 @@
   
   .puzzle-slot.filled {
     border: 2px solid #4CAF50;
+  }
+
+  .puzzle-progress {
+    margin: 15px 0;
+    font-weight: bold;
+    color: var(--accent);
+    font-size: 1.1rem;
   }
   
   .puzzle-info {
@@ -209,6 +220,20 @@
       width: 100px;
       height: 100px;
     }
+    .puzzle-piece {
+      width: 70px;
+      height: 70px;
+    }
+    .puzzle-board {
+      width: 280px;
+      height: 210px;
+    }
+    .puzzle-pieces {
+      max-width: 300px;
+    }
+  }
+
+  @media (max-width:480px){ 
     .puzzle-piece {
       width: 60px;
       height: 60px;
@@ -599,14 +624,6 @@ function openDiModal(p){
 }
 
 /* ---------- Badges & check-in logic ---------- */
-/* Badges rules (as you specified):
-  - Check-in at a site => badge per site (site badge)
-  - Complete a quiz => "Nhà sử học tập sự"
-  - Complete both quizzes => "Nhà sử học tài ba"
-  - Complete a puzzle (image assembly) => "Thợ ghép tranh tài ba"
-  - Complete both puzzles => "Nhà phục chế tài hoa"
-  - Collect all badges => "Người giữ lửa di sản"
-*/
 function getBadges(){ return loadBadges(); }
 function awardBadge(id,name,icon){
   const arr = getBadges();
@@ -780,24 +797,25 @@ function labelGame(id){
   return map[id]||id;
 }
 
-/* ---------- GAME GHÉP HÌNH MỚI - MỖI ĐIỂM 1 ẢNH ---------- */
+/* ---------- GAME GHÉP HÌNH ĐÃ SỬA ---------- */
 const PUZZLE_GAMES = {
   'puzzle_nhatu': {
     title: 'Mảnh ghép lịch sử - Nhà tù Phú Quốc',
-    image: 'images/chuongcop.jpg', // Ảnh chuồng cọp kẽm gai
-    pieces: 12, // 4x3 grid
-    info: 'Chuồng cọp kẽm gai tại Nhà tù Phú Quốc - một trong những hình thức tra tấn dã man nhất. Tù nhân bị nhốt trong các chuồng sắt nhỏ hẹp với hàng rào kẽm gai bao quanh, không thể đứng thẳng hay nằm thoải mái. Họ phải chịu đựng cái nóng thiêu đốt ban ngày và cái lạnh buốt xương ban đêm, cùng với những vết thương do kẽm gai gây ra.'
+    image: 'images/chuongcop.jpg',
+    pieces: 12,
+    info: 'Chuồng cọp kẽm gai tại Nhà tù Phú Quốc - một trong những hình thức tra tấn dã man nhất. Tù nhân bị nhốt trong các chuồng sắt nhỏ hẹp với hàng rào kẽm gai bao quanh, không thể đứng thẳng hay nằm thoải mái.'
   },
   'puzzle_trungtruc': {
     title: 'Mảnh ghép lịch sử - Đình Nguyễn Trung Trực',
-    image: 'images/ngoidinhntt.jpg', // Ảnh ngôi đình
-    pieces: 9, // 3x3 grid
-    info: 'Đình thần Nguyễn Trung Trực - công trình kiến trúc tâm linh quan trọng bậc nhất ở Phú Quốc. Đình được xây dựng từ năm 1882 để thờ vị anh hùng dân tộc Nguyễn Trung Trực - người đã có công lớn trong cuộc kháng chiến chống thực dân Pháp. Kiến trúc đình mang đậm phong cách Nam Bộ với mái ngói âm dương, cột gỗ quý và các họa tiết trang trí tinh xảo.'
+    image: 'images/ngoidinhntt.jpg',
+    pieces: 9,
+    info: 'Đình thần Nguyễn Trung Trực - công trình kiến trúc tâm linh quan trọng bậc nhất ở Phú Quốc. Đình được xây dựng từ năm 1882 để thờ vị anh hùng dân tộc Nguyễn Trung Trực.'
   }
 };
 
 let currentPuzzleGame = null;
 let placedPieces = 0;
+let draggedPiece = null;
 
 function startPuzzleGame(gameId, site) {
   const puzzleData = PUZZLE_GAMES[gameId];
@@ -806,23 +824,33 @@ function startPuzzleGame(gameId, site) {
     return;
   }
 
-  currentPuzzleGame = { id: gameId, site: site, puzzleData: puzzleData };
-  placedPieces = 0;
+  // KIỂM TRA ẢNH TỒN TẠI
+  const img = new Image();
+  img.onload = function() {
+    currentPuzzleGame = { id: gameId, site: site, puzzleData: puzzleData };
+    placedPieces = 0;
+    loadPuzzle();
+    
+    document.getElementById('gameTitle').innerText = puzzleData.title;
+    document.getElementById('gameNote').innerText = 'Kéo thả các mảnh ghép vào đúng vị trí trên bảng';
+    document.getElementById('gameSubmit').style.display = 'none';
+    document.getElementById('gameNext').style.display = 'none';
+    
+    gameModal.show();
+  };
   
-  loadPuzzle();
+  img.onerror = function() {
+    alert('Không tìm thấy ảnh: ' + puzzleData.image + '. Vui lòng kiểm tra đường dẫn ảnh.');
+    return;
+  };
   
-  document.getElementById('gameTitle').innerText = puzzleData.title;
-  document.getElementById('gameNote').innerText = 'Kéo thả các mảnh ghép vào đúng vị trí trên bảng';
-  document.getElementById('gameSubmit').style.display = 'none';
-  document.getElementById('gameNext').style.display = 'none';
-  
-  gameModal.show();
+  img.src = puzzleData.image;
 }
 
 function loadPuzzle() {
   const puzzle = currentPuzzleGame.puzzleData;
-  const rows = Math.sqrt(puzzle.pieces); // Giả sử số mảnh là số chính phương
-  const cols = puzzle.pieces / rows;
+  const rows = puzzle.pieces === 12 ? 3 : 3; // 12 mảnh = 4x3, 9 mảnh = 3x3
+  const cols = puzzle.pieces === 12 ? 4 : 3;
   
   const html = `
     <div class="puzzle-container">
@@ -830,7 +858,9 @@ function loadPuzzle() {
       <div class="puzzle-progress">Đã ghép: <span id="placedCount">0</span>/${puzzle.pieces} mảnh</div>
       
       <div class="puzzle-area">
-        <div class="puzzle-pieces" id="puzzlePieces"></div>
+        <div class="puzzle-pieces" id="puzzlePieces">
+          <div style="color:#666;padding:20px">Đang tải mảnh ghép...</div>
+        </div>
         <div class="puzzle-board" id="puzzleBoard"></div>
       </div>
       
@@ -845,69 +875,127 @@ function loadPuzzle() {
   
   document.getElementById('gameBody').innerHTML = html;
   
-  // Tạo các mảnh ghép
-  const piecesContainer = document.getElementById('puzzlePieces');
-  const board = document.getElementById('puzzleBoard');
-  
   // Tạo board với các ô
+  const board = document.getElementById('puzzleBoard');
+  const piecesContainer = document.getElementById('puzzlePieces');
+  
   board.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
   board.style.gridTemplateRows = `repeat(${rows}, 1fr)`;
   
+  // Xóa nội dung cũ
+  piecesContainer.innerHTML = '';
+  board.innerHTML = '';
+  
+  // Tạo các ô trống trên board
   for (let i = 0; i < puzzle.pieces; i++) {
     const slot = document.createElement('div');
     slot.className = 'puzzle-slot';
     slot.dataset.index = i;
     board.appendChild(slot);
-    
-    const piece = document.createElement('div');
-    piece.className = 'puzzle-piece';
-    piece.draggable = true;
-    piece.dataset.index = i;
-    
-    // Tính toán background position cho mỗi mảnh
-    const row = Math.floor(i / cols);
-    const col = i % cols;
-    const bgX = -col * 100;
-    const bgY = -row * 100;
-    
-    piece.style.backgroundImage = `url('${puzzle.image}')`;
-    piece.style.backgroundPosition = `${bgX}% ${bgY}%`;
-    piece.style.backgroundSize = `${cols * 100}% ${rows * 100}%`;
-    
-    // Sự kiện drag and drop
-    piece.addEventListener('dragstart', handleDragStart);
-    piece.addEventListener('dragend', handleDragEnd);
-    
-    piecesContainer.appendChild(piece);
   }
   
-  // Sự kiện cho các ô trên board
-  const slots = document.querySelectorAll('.puzzle-slot');
-  slots.forEach(slot => {
-    slot.addEventListener('dragover', handleDragOver);
-    slot.addEventListener('drop', handleDrop);
-    slot.addEventListener('dragenter', handleDragEnter);
-    slot.addEventListener('dragleave', handleDragLeave);
-  });
-  
-  // Xáo trộn các mảnh ghép
-  shufflePieces();
+  // Tạo các mảnh ghép
+  setTimeout(() => {
+    for (let i = 0; i < puzzle.pieces; i++) {
+      const piece = document.createElement('div');
+      piece.className = 'puzzle-piece';
+      piece.dataset.index = i;
+      
+      // Tính toán background position
+      const row = Math.floor(i / cols);
+      const col = i % cols;
+      const bgX = -col * (100 / (cols - 1));
+      const bgY = -row * (100 / (rows - 1));
+      
+      piece.style.backgroundImage = `url('${puzzle.image}')`;
+      piece.style.backgroundPosition = `${bgX}% ${bgY}%`;
+      piece.style.backgroundSize = `${cols * 100}% ${rows * 100}%`;
+      
+      // THÊM SỰ KIỆN CHO CẢ DESKTOP VÀ MOBILE
+      addDragEvents(piece);
+      
+      piecesContainer.appendChild(piece);
+    }
+    
+    // Thêm sự kiện cho các ô
+    const slots = document.querySelectorAll('.puzzle-slot');
+    slots.forEach(slot => {
+      addSlotEvents(slot);
+    });
+    
+    // Xáo trộn các mảnh ghép
+    shufflePieces();
+  }, 100);
 }
 
-function shufflePieces() {
-  const pieces = document.querySelectorAll('.puzzle-piece');
-  const piecesArray = Array.from(pieces);
-  const piecesContainer = document.getElementById('puzzlePieces');
+// HÀM THÊM SỰ KIỆN KÉO THẢ (CHO CẢ DESKTOP VÀ MOBILE)
+function addDragEvents(element) {
+  // Desktop events
+  element.addEventListener('dragstart', handleDragStart);
+  element.addEventListener('dragend', handleDragEnd);
   
-  for (let i = piecesArray.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    piecesContainer.appendChild(piecesArray[j]);
+  // Mobile touch events
+  element.addEventListener('touchstart', handleTouchStart, { passive: false });
+  element.addEventListener('touchmove', handleTouchMove, { passive: false });
+  element.addEventListener('touchend', handleTouchEnd);
+}
+
+function addSlotEvents(slot) {
+  slot.addEventListener('dragover', handleDragOver);
+  slot.addEventListener('drop', handleDrop);
+  slot.addEventListener('dragenter', handleDragEnter);
+  slot.addEventListener('dragleave', handleDragLeave);
+  
+  // Mobile events for slots
+  slot.addEventListener('touchmove', handleTouchMove, { passive: false });
+  slot.addEventListener('touchend', handleTouchEnd);
+}
+
+// TOUCH HANDLERS CHO MOBILE
+function handleTouchStart(e) {
+  e.preventDefault();
+  const touch = e.touches[0];
+  draggedPiece = this;
+  this.style.opacity = '0.4';
+  
+  // Tạo clone element để hiển thị khi kéo
+  const rect = this.getBoundingClientRect();
+  this.dataset.startX = touch.clientX - rect.left;
+  this.dataset.startY = touch.clientY - rect.top;
+}
+
+function handleTouchMove(e) {
+  e.preventDefault();
+  if (!draggedPiece) return;
+  
+  const touch = e.touches[0];
+  draggedPiece.style.position = 'fixed';
+  draggedPiece.style.zIndex = '1000';
+  draggedPiece.style.left = (touch.clientX - draggedPiece.dataset.startX) + 'px';
+  draggedPiece.style.top = (touch.clientY - draggedPiece.dataset.startY) + 'px';
+}
+
+function handleTouchEnd(e) {
+  if (!draggedPiece) return;
+  
+  const touch = e.changedTouches[0];
+  const elements = document.elementsFromPoint(touch.clientX, touch.clientY);
+  const slot = elements.find(el => el.classList.contains('puzzle-slot'));
+  
+  if (slot && !slot.hasChildNodes()) {
+    handleDropOnSlot(slot, draggedPiece);
   }
+  
+  // Reset style
+  draggedPiece.style.position = '';
+  draggedPiece.style.zIndex = '';
+  draggedPiece.style.left = '';
+  draggedPiece.style.top = '';
+  draggedPiece.style.opacity = '1';
+  draggedPiece = null;
 }
 
-// Drag and Drop handlers
-let draggedPiece = null;
-
+// DRAG AND DROP HANDLERS (DESKTOP)
 function handleDragStart(e) {
   draggedPiece = this;
   this.style.opacity = '0.4';
@@ -937,33 +1025,57 @@ function handleDrop(e) {
   this.classList.remove('hover');
   
   if (draggedPiece && !this.hasChildNodes()) {
-    const pieceIndex = parseInt(draggedPiece.dataset.index);
-    const slotIndex = parseInt(this.dataset.index);
-    
-    if (pieceIndex === slotIndex) {
-      // Đúng vị trí
-      this.appendChild(draggedPiece);
-      this.classList.add('filled');
-      draggedPiece.style.cursor = 'default';
-      draggedPiece.draggable = false;
-      
-      placedPieces++;
-      document.getElementById('placedCount').textContent = placedPieces;
-      
-      // Kiểm tra hoàn thành
-      if (placedPieces === currentPuzzleGame.puzzleData.pieces) {
-        showPuzzleInfo();
-      }
-    } else {
-      // Sai vị trí - hiệu ứng lắc
-      draggedPiece.style.animation = 'shake 0.5s';
-      setTimeout(() => {
-        draggedPiece.style.animation = '';
-      }, 500);
-    }
+    handleDropOnSlot(this, draggedPiece);
   }
-  
   return false;
+}
+
+// HÀM XỬ LÝ CHUNG CHO CẢ DESKTOP VÀ MOBILE
+function handleDropOnSlot(slot, piece) {
+  const pieceIndex = parseInt(piece.dataset.index);
+  const slotIndex = parseInt(slot.dataset.index);
+  
+  if (pieceIndex === slotIndex) {
+    // Đúng vị trí
+    slot.appendChild(piece);
+    slot.classList.add('filled');
+    piece.style.cursor = 'default';
+    piece.draggable = false;
+    
+    // Remove touch events khi đã đặt đúng
+    piece.removeEventListener('touchstart', handleTouchStart);
+    piece.removeEventListener('touchmove', handleTouchMove);
+    piece.removeEventListener('touchend', handleTouchEnd);
+    
+    placedPieces++;
+    document.getElementById('placedCount').textContent = placedPieces;
+    
+    // Kiểm tra hoàn thành
+    if (placedPieces === currentPuzzleGame.puzzleData.pieces) {
+      showPuzzleInfo();
+    }
+  } else {
+    // Sai vị trí - hiệu ứng lắc
+    piece.style.animation = 'shake 0.5s';
+    setTimeout(() => {
+      piece.style.animation = '';
+    }, 500);
+  }
+}
+
+function shufflePieces() {
+  const pieces = document.querySelectorAll('.puzzle-piece');
+  const piecesArray = Array.from(pieces);
+  const piecesContainer = document.getElementById('puzzlePieces');
+  
+  // Xóa hết trước khi xáo trộn
+  piecesContainer.innerHTML = '';
+  
+  // Xáo trộn và thêm lại
+  for (let i = piecesArray.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    piecesContainer.appendChild(piecesArray[j]);
+  }
 }
 
 function showPuzzleInfo() {
