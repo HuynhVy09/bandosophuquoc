@@ -797,7 +797,7 @@ function labelGame(id){
   return map[id]||id;
 }
 
-/* ---------- GAME GHÉP HÌNH ĐÃ SỬA ---------- */
+/* ---------- GAME GHÉP HÌNH SỬ DỤNG ẢNH ĐÃ CẮT SẴN ---------- */
 const PUZZLE_GAMES = {
   'puzzle_nhatu': {
     title: 'Mảnh ghép lịch sử - Nhà tù Phú Quốc',
@@ -807,9 +807,19 @@ const PUZZLE_GAMES = {
   },
   'puzzle_trungtruc': {
     title: 'Mảnh ghép lịch sử - Đình Nguyễn Trung Trực',
-    image: 'images/ngoidinhntt.jpg',
+    pieceImages: [
+      'images/ntt1.jpg',
+      'images/ntt2.jpg',
+      'images/ntt3.jpg',
+      'images/ntt4.jpg',
+      'images/ntt5.jpg',
+      'images/ntt6.jpg',
+      'images/ntt7.jpg',
+      'images/ntt8.jpg',
+      'images/ntt9.jpg'
+    ],
     pieces: 9,
-    info: 'Đình thần Nguyễn Trung Trực - công trình kiến trúc tâm linh quan trọng bậc nhất ở Phú Quốc. Đình được xây dựng từ năm 1882 để thờ vị anh hùng dân tộc Nguyễn Trung Trực.'
+    info: 'Đình thần Nguyễn Trung Trực - công trình kiến trúc tâm linh quan trọng bậc nhất ở Phú Quốc. Đình được xây dựng từ năm 1882 để thờ vị anh hùng dân tộc Nguyễn Trung Trực - người đã có công lớn trong cuộc kháng chiến chống thực dân Pháp. Kiến trúc đình mang đậm phong cách Nam Bộ với mái ngói âm dương, cột gỗ quý và các họa tiết trang trí tinh xảo.'
   }
 };
 
@@ -824,27 +834,16 @@ function startPuzzleGame(gameId, site) {
     return;
   }
 
-  // KIỂM TRA ẢNH TỒN TẠI
-  const img = new Image();
-  img.onload = function() {
-    currentPuzzleGame = { id: gameId, site: site, puzzleData: puzzleData };
-    placedPieces = 0;
-    loadPuzzle();
-    
-    document.getElementById('gameTitle').innerText = puzzleData.title;
-    document.getElementById('gameNote').innerText = 'Kéo thả các mảnh ghép vào đúng vị trí trên bảng';
-    document.getElementById('gameSubmit').style.display = 'none';
-    document.getElementById('gameNext').style.display = 'none';
-    
-    gameModal.show();
-  };
+  currentPuzzleGame = { id: gameId, site: site, puzzleData: puzzleData };
+  placedPieces = 0;
+  loadPuzzle();
   
-  img.onerror = function() {
-    alert('Không tìm thấy ảnh: ' + puzzleData.image + '. Vui lòng kiểm tra đường dẫn ảnh.');
-    return;
-  };
+  document.getElementById('gameTitle').innerText = puzzleData.title;
+  document.getElementById('gameNote').innerText = 'Kéo thả các mảnh ghép vào đúng vị trí trên bảng';
+  document.getElementById('gameSubmit').style.display = 'none';
+  document.getElementById('gameNext').style.display = 'none';
   
-  img.src = puzzleData.image;
+  gameModal.show();
 }
 
 function loadPuzzle() {
@@ -896,25 +895,59 @@ function loadPuzzle() {
   
   // Tạo các mảnh ghép
   setTimeout(() => {
+    let piecesLoaded = 0;
+    const totalPieces = puzzle.pieces;
+    
     for (let i = 0; i < puzzle.pieces; i++) {
       const piece = document.createElement('div');
       piece.className = 'puzzle-piece';
       piece.dataset.index = i;
       
-      // Tính toán background position
-      const row = Math.floor(i / cols);
-      const col = i % cols;
-      const bgX = -col * (100 / (cols - 1));
-      const bgY = -row * (100 / (rows - 1));
-      
-      piece.style.backgroundImage = `url('${puzzle.image}')`;
-      piece.style.backgroundPosition = `${bgX}% ${bgY}%`;
-      piece.style.backgroundSize = `${cols * 100}% ${rows * 100}%`;
+      // Sử dụng ảnh đã cắt sẵn cho game puzzle_trungtruc
+      let pieceImage;
+      if (currentPuzzleGame.id === 'puzzle_trungtruc' && puzzle.pieceImages) {
+        pieceImage = puzzle.pieceImages[i];
+        piece.style.backgroundImage = `url('${pieceImage}')`;
+        piece.style.backgroundSize = 'cover';
+      } else {
+        // Giữ nguyên cách cũ cho các game khác
+        const row = Math.floor(i / cols);
+        const col = i % cols;
+        const bgX = -col * (100 / (cols - 1));
+        const bgY = -row * (100 / (rows - 1));
+        
+        piece.style.backgroundImage = `url('${puzzle.image}')`;
+        piece.style.backgroundPosition = `${bgX}% ${bgY}%`;
+        piece.style.backgroundSize = `${cols * 100}% ${rows * 100}%`;
+      }
       
       // THÊM SỰ KIỆN CHO CẢ DESKTOP VÀ MOBILE
       addDragEvents(piece);
       
       piecesContainer.appendChild(piece);
+      
+      // Kiểm tra xem ảnh có tồn tại không
+      const img = new Image();
+      img.onload = function() {
+        piecesLoaded++;
+        if (piecesLoaded === totalPieces) {
+          // Tất cả ảnh đã tải xong, xáo trộn các mảnh ghép
+          shufflePieces();
+        }
+      };
+      img.onerror = function() {
+        console.error('Không thể tải ảnh: ' + pieceImage);
+        piecesLoaded++;
+        if (piecesLoaded === totalPieces) {
+          shufflePieces();
+        }
+      };
+      
+      if (currentPuzzleGame.id === 'puzzle_trungtruc' && puzzle.pieceImages) {
+        img.src = puzzle.pieceImages[i];
+      } else {
+        img.src = puzzle.image;
+      }
     }
     
     // Thêm sự kiện cho các ô
@@ -922,9 +955,6 @@ function loadPuzzle() {
     slots.forEach(slot => {
       addSlotEvents(slot);
     });
-    
-    // Xáo trộn các mảnh ghép
-    shufflePieces();
   }, 100);
 }
 
